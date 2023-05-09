@@ -1,6 +1,6 @@
 """_summary_"""
 
-from repositories.philips_lights_api import PhilipsLightsApi
+from api_v1.repositories.philips_lights_api import PhilipsLightsApi
 
 
 class PhilipsLightsService:
@@ -13,12 +13,12 @@ class PhilipsLightsService:
         """_summary_"""
         lights = self.lights_api.get_all_lights()
         for light in lights:
-            light["state"]["on"] = True
-            self.lights_api.send_data_change(light)
+            light.state.on = True
+            self.lights_api.send_light_data_change(light)
 
     def turn_off_all_lights(self):
         """_summary_"""
         lights = self.lights_api.get_all_lights()
         for light in lights:
-            light["state"]["on"] = False
+            light.state.on = False
             self.lights_api.send_data_change(light)

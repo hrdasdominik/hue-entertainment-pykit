@@ -5,8 +5,8 @@ from typing import List
 
 import requests
 
-from repositories.philips_base_api import PhilipsBaseApi
-from utils.decorators import get, put
+from api_v1.repositories.philips_base_api import PhilipsBaseApi
+from utils.decorators import get
 from utils.logger import logging
 from models.philips_light_model import PhilipsLightModel, State, Swupdate, CT
 from models.philips_light_model import Capabilities, Config, Control, Streaming
@@ -21,36 +21,36 @@ class PhilipsLightsApi(PhilipsBaseApi):
         """_summary_"""
         return self.get_data(endpoint)
 
-    @get("/lights/{id}")
-    def get_a_light(self, endpoint: str, i_d: int) -> PhilipsLightModel | None:
+    @get("/lights/{identification}")
+    def get_a_light(self, endpoint: str, identification: int) -> PhilipsLightModel | None:
         """_summary_"""
-        return self.get_data(endpoint, i_d)
+        return self.get_data(endpoint, identification)
 
-    @get("/lights/{id}/state")
-    def get_ligth_state(self, endpoint: str, i_d: int) -> State | None:
+    @get("/lights/{identification}/state")
+    def get_light_state(self, endpoint: str, identification: int) -> State | None:
         """_summary_"""
-        return self.get_data(endpoint, i_d)
+        return self.get_data(endpoint, identification)
 
-    @put("/lights/{id}/state")
-    def send_data_change(self, endpoint, i_d: int, light: PhilipsLightModel) -> None:
+    # @put("/lights/{identification}/state")
+    def send_light_data_change(self, light: PhilipsLightModel) -> None:
         """_summary_
 
         Args:
-            endpoint (_type_): _description_
             light (PhilipsLightModel): _description_
 
         Raises:
             ValueError: _description_
         """
         if light is None:
-            raise ValueError("Light object is None")
-        light_id = light.id
+            raise ValueError("Light object is value of None")
+
+        id = light.id
         data = self.serialize_object(light)
 
-        logging.info("PACKET REQUEST:", data)
+        logging.info("PACKET REQUEST:" + data)
 
         response = requests.put(
-            super().get_base_url() + endpoint + f"/{light_id}", data, timeout=10
+            super().get_base_url() + "/lights" + f"/{id}", data, timeout=1
         )
 
         if response.status_code == requests.codes["ok"] and "error" not in str(
@@ -92,7 +92,7 @@ class PhilipsLightsApi(PhilipsBaseApi):
 
     def populate_object(self, response_json) -> list:
         lights = []
-        for light_id, light_info in response_json.items():
+        for light_identification, light_info in response_json.items():
             state = light_info["state"]
             swupdate = light_info["swupdate"]
             capabilites = light_info["capabilities"]
@@ -104,7 +104,7 @@ class PhilipsLightsApi(PhilipsBaseApi):
 
             lights.append(
                 PhilipsLightModel(
-                    light_id,
+                    light_identification,
                     State(
                         state["on"],
                         state["bri"],
@@ -118,7 +118,10 @@ class PhilipsLightsApi(PhilipsBaseApi):
                         state["mode"],
                         state["reachable"],
                     ),
-                    Swupdate(swupdate["state"], swupdate["lastinstall"]),
+                    Swupdate(
+                        swupdate["state"],
+                        swupdate["lastinstall"]
+                    ),
                     light_info["type"],
                     light_info["name"],
                     light_info["modelid"],
