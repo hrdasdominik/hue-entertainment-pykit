@@ -1,0 +1,5 @@
+IP_BRIDGE = "192.168.100.11"
+API_KEY = "Z4CIRp2kbqfQafVeKK8P7mwuVl1bJYVL08BgWxcm"
+
+URL_HTTP = f"http://{IP_BRIDGE}/api/{API_KEY}"
+URL_HTTPS = f"https://{IP_BRIDGE}/api/{API_KEY}"
