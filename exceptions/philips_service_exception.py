@@ -1,0 +1,2 @@
+class PhilipsServiceException(Exception):
+    pass
