@@ -1,0 +1,142 @@
+{
+    "1": {
+        "state": {
+            "on": False,
+            "bri": 97,
+            "hue": 63054,
+            "sat": 109,
+            "effect": "none",
+            "xy": [
+                0.4828,
+                0.3323
+            ],
+            "ct": 410,
+            "alert": "select",
+            "colormode": "xy",
+            "mode": "homeautomation",
+            "reachable": True
+        },
+        "swupdate": {
+            "state": "noupdates",
+            "lastinstall": "2023-03-18T13:46:50"
+        },
+        "type": "Extended color light",
+        "name": "Hue color lamp 1",
+        "modelid": "LCA006",
+        "manufacturername": "Signify Netherlands B.V.",
+        "productname": "Hue color lamp",
+        "capabilities": {
+            "certified": True,
+            "control": {
+                "mindimlevel": 200,
+                "maxlumen": 1055,
+                "colorgamuttype": "C",
+                "colorgamut": [
+                    [
+                        0.6915,
+                        0.3083
+                    ],
+                    [
+                        0.17,
+                        0.7
+                    ],
+                    [
+                        0.1532,
+                        0.0475
+                    ]
+                ],
+                "ct": {
+                    "min": 153,
+                    "max": 500
+                }
+            },
+            "streaming": {
+                "renderer": True,
+                "proxy": True
+            }
+        },
+        "config": {
+            "archetype": "sultanbulb",
+            "function": "mixed",
+            "direction": "omnidirectional",
+            "startup": {
+                "mode": "safety",
+                "configured": True
+            }
+        },
+        "uniqueid": "00:17:88:01:0b:a6:12:d4-0b",
+        "swversion": "1.101.10",
+        "swconfigid": "A7EA4812",
+        "productid": "Philips-LCA006-1-A60HECLv1"
+    },
+    "2": {
+        "state": {
+            "on": False,
+            "bri": 97,
+            "hue": 37663,
+            "sat": 208,
+            "effect": "none",
+            "xy": [
+                0.2006,
+                0.3418
+            ],
+            "ct": 500,
+            "alert": "select",
+            "colormode": "xy",
+            "mode": "homeautomation",
+            "reachable": True
+        },
+        "swupdate": {
+            "state": "noupdates",
+            "lastinstall": "2023-05-13T18:04:29"
+        },
+        "type": "Extended color light",
+        "name": "Hue gradient lightstrip 1",
+        "modelid": "LCX004",
+        "manufacturername": "Signify Netherlands B.V.",
+        "productname": "Hue gradient lightstrip",
+        "capabilities": {
+            "certified": True,
+            "control": {
+                "mindimlevel": 10,
+                "maxlumen": 1200,
+                "colorgamuttype": "C",
+                "colorgamut": [
+                    [
+                        0.6915,
+                        0.3083
+                    ],
+                    [
+                        0.17,
+                        0.7
+                    ],
+                    [
+                        0.1532,
+                        0.0475
+                    ]
+                ],
+                "ct": {
+                    "min": 153,
+                    "max": 500
+                }
+            },
+            "streaming": {
+                "renderer": True,
+                "proxy": True
+            }
+        },
+        "config": {
+            "archetype": "huelightstrip",
+            "function": "mixed",
+            "direction": "omnidirectional",
+            "startup": {
+                "mode": "safety",
+                "configured": True
+            }
+        },
+        "uniqueid": "00:17:88:01:0b:90:21:a0-0b",
+        "swversion": "1.101.2",
+        "swconfigid": "F03CAF4D",
+        "productid": "Philips-LCX004-1-GALSECLv1"
+    }
+}

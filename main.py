@@ -1,24 +1,25 @@
 """_summary_"""
 
-from controllers.philips_bridge_controller import PhilipsBridgeController
-from controllers.philips_lights_controller import PhilipsLightsController
-from services.philips_bridge_service import PhilipsBridgeService
-from services.philips_lights_service import PhilipsLightsService
-from repositories.philips_bridge_api import PhilipsBridgeApi
-from repositories.philips_lights_api import PhilipsLightsApi
+from api.light.light_repository import LightRepository
+from api.light.light_service import LightService
+
+from api.scene.scene_repository import SceneRepository
+from api.scene.scene_service import SceneService
+
+from menu_manager import MenuManager
 
 
 def main():
     """_summary_"""
-    bridge_api = PhilipsBridgeApi()
-    bridge_service = PhilipsBridgeService(bridge_api)
-    bridge_controller = PhilipsBridgeController(bridge_service)
+    light_repository = LightRepository()
+    light_service = LightService(light_repository)
+    
+    scene_repository = SceneRepository()
+    scene_service = SceneService(scene_repository)
 
-    lights_api = PhilipsLightsApi()
-    lights_service = PhilipsLightsService(lights_api)
-    lights_controller = PhilipsLightsController(lights_service)
+    menu_manager = MenuManager(light_service, scene_service)
+    menu_manager.start()
 
-    lights_controller.turn_on_all_lights()
 
 if __name__ == "__main__":
     main()
