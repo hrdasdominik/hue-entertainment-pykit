@@ -1,3 +1,5 @@
+"""_summary_"""
+
 from services.philips_bridge_service import PhilipsBridgeService
 
 
@@ -8,4 +10,5 @@ class PhilipsBridgeController:
         self.__bridge_service = bridge_service
 
     def print_config(self):
+        """_summary_"""
         self.__bridge_service.print_config()
