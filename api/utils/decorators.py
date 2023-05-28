@@ -1,8 +1,8 @@
-"""_summary_"""
+"""Decorators for the all request methods available for Philips Hue API v2"""
 
 from functools import wraps
 from typing import Callable
-from utils.logger import logging
+from api.utils.logger import logging
 
 
 def get(endpoint: str) -> Callable:
@@ -13,8 +13,10 @@ def get(endpoint: str) -> Callable:
         def wrapper(self, identification: str = None) -> dict:
             if "{identification}" in endpoint:
                 if identification is None:
-                    raise ValueError("Missing required identification for endpoint.")
-                formatted_endpoint = endpoint.format(identification=identification)
+                    raise ValueError(
+                        "Missing required identification for endpoint.")
+                formatted_endpoint = endpoint.format(
+                    identification=identification)
             else:
                 formatted_endpoint = endpoint
 
@@ -25,6 +27,7 @@ def get(endpoint: str) -> Callable:
 
     return decorator
 
+
 def post(endpoint: str):
     """A decorator for POST requests"""
 
@@ -33,8 +36,10 @@ def post(endpoint: str):
         def wrapper(self, identification: str = None, *args, **kwargs) -> dict:
             if "{identification}" in endpoint:
                 if identification is None:
-                    raise ValueError("Missing required identification for endpoint.")
-                formatted_endpoint = endpoint.format(identification=identification)
+                    raise ValueError(
+                        "Missing required identification for endpoint.")
+                formatted_endpoint = endpoint.format(
+                    identification=identification)
             else:
                 formatted_endpoint = endpoint
 
@@ -54,8 +59,10 @@ def put(endpoint: str):
         def wrapper(self, identification: str = None, *args, **kwargs) -> dict:
             if "{identification}" in endpoint:
                 if identification is None:
-                    raise ValueError("Missing required identification for endpoint.")
-                formatted_endpoint = endpoint.format(identification=identification)
+                    raise ValueError(
+                        "Missing required identification for endpoint.")
+                formatted_endpoint = endpoint.format(
+                    identification=identification)
             else:
                 formatted_endpoint = endpoint
 
@@ -75,8 +82,10 @@ def delete(endpoint: str):
         def wrapper(self, identification: str = None, *args, **kwargs) -> dict:
             if "{identification}" in endpoint:
                 if identification is None:
-                    raise ValueError("Missing required identification for endpoint.")
-                formatted_endpoint = endpoint.format(identification=identification)
+                    raise ValueError(
+                        "Missing required identification for endpoint.")
+                formatted_endpoint = endpoint.format(
+                    identification=identification)
             else:
                 formatted_endpoint = endpoint
 
@@ -86,3 +95,15 @@ def delete(endpoint: str):
         return wrapper
 
     return decorator
+
+
+def singleton(cls):
+    """Decorator for making classes singleton"""
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return get_instance

@@ -1,2 +1,0 @@
-class PhilipsApiError(Exception):
-    pass

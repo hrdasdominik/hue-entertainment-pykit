@@ -1,93 +1,57 @@
-"""_summary_"""
+import logging
+from typing import Optional, Any
 
-import json
 import requests
 
-from utils.logger import logging
-from utils.decorators import get, put
-from config.constants import API2_URL_HTTPS, API2_USERNAME
+from api.base_repository import BaseRepository
+from api.bridge.bridge import Bridge
+from api.exceptions.api_exception import ApiException
+from api.light.light_model import Light
+from api.utils.decorators import singleton
 
 
-class LightRepository:
-    """_summary_"""
+@singleton
+class LightRepository(BaseRepository):
+    def __init__(self, bridge: Bridge):
+        super().__init__(bridge)
 
-    def __init__(self) -> None:
-        self.__headers = {"hue-application-key": API2_USERNAME}
+    def get_lights(self, identification: Optional[str] = None) -> list[Light]:
+        logging.debug("Started 'get_light'")
 
-    @get("/resource/light")
-    def get_lights(self, endpoint: str) -> dict:
-        """A method for sending a GET request to all lights"""
-        response = requests.get(
-            url=API2_URL_HTTPS + endpoint,
-            headers=self.__headers,
-            timeout=1,
-            verify=False,
-        )
+        url: str = self.get_default_url() + "resource/light"
 
-        if response.status_code == requests.codes["ok"]:
-            data = response.json()
-            logging.info(
-                str(response.status_code)
-                + ", "
-                + response.reason
-            )
-            return data
+        if identification is not None:
+            logging.debug(f"Light identification: {identification}")
+            url = url + f"/{identification}"
 
-        logging.error(
-            "status code: "
-            + str(response.status_code)
-            + "\n"
-            + "context: "
-            + str(response.content)
-        )
-
-    @get("/resource/light/{identification}")
-    def get_light(self, endpoint: str) -> dict:
-        """A method for sending a GET request to a specific light."""
-        response = requests.get(
-            url=API2_URL_HTTPS + endpoint,
-            headers=self.__headers,
-            timeout=1,
-            verify=False,
-        )
+        response = requests.request("GET", url=url,
+                                    headers=self.get_headers(), verify=False)
 
         if response.status_code == requests.codes["ok"]:
-            data = response.json()
-            logging.info(
-                str(response.status_code)
-                + ", "
-                + response.reason
-            )
-            return data
-        logging.error(
-            "status code: "
-            + str(response.status_code)
-            + "\n"
-            + "context: "
-            + str(response.content)
-        )
+            data: list[dict[str, Any]] = response.json()["data"]
 
-    @put("/resource/light/{identification}")
-    def put_light(self, endpoint: str, data: dict) -> None:
-        """A method for sending a PUT request to a specific light"""
-        url = API2_URL_HTTPS + endpoint
-        json_data = json.dumps(data)
+            logging.debug(f"json: {data}")
 
-        response = requests.put(
-            url=url, headers=self.__headers, data=json_data, timeout=2, verify=False
-        )
+            lights: list[Light] = []
+            for light in data:
+                lights.append(Light(light))
 
-        if response.status_code == requests.codes["ok"]:
-            logging.info(
-                str(response.status_code)
-                + ", "
-                + response.reason
-            )
+            return lights
+
         else:
-            logging.error(
-                "status code: "
-                + str(response.status_code)
-                + "\n"
-                + "context: "
-                + str(response.content)
-            )
+            raise ApiException.response_status(response)
+
+    def put_light(self, light: Light):
+        """Update method for the light"""
+        logging.debug(f"Started 'put_light' identification: {light.id}")
+
+        url: str = self.get_default_url() + f"resource/light/{light.id}"
+
+        response = requests.request("PUT", url=url,
+                                    headers=self.get_headers(),
+                                    json=light.to_dict(), verify=False)
+
+        if response.status_code == requests.codes["ok"]:
+            logging.debug(f"Update successful: {response.json()}")
+        else:
+            raise ApiException.response_status(response)

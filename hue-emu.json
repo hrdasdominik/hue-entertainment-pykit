@@ -1,0 +1,49 @@
+id: required(string – pattern: ^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$)
+Unique identifier representing a specific resource instance
+
+
+name: required(string – minLength: 1 – maxLength: 32)
+Human readable name of a resource
+
+
+position: required(object)
+xyz position of this channel. It is the average position of its members
+
+    x: required(number – minimum: -1 – maximum: 1)
+    Coordinate of a single axis
+
+    y: required(number – minimum: -1 – maximum: 1)
+    Coordinate of a single axis
+
+    z: required(number – minimum: -1 – maximum: 1)
+    Coordinate of a single axis
+
+
+on: required(boolean)
+On/Off state of the light on=true, off=false
+
+
+brightness: required(number – maximum: 100)
+Brightness percentage. value cannot be 0, writing 0 changes it to lowest possible brightness
+
+
+[
+  {
+    "id": "45830f0b-1245-4484-b6f3-6bed682f9cc2",
+    "name": "Hue color lamp 2",
+    "position": { "x": "0.356", "y": "0.154", "z": "-0.521" }
+    "on": true,
+    "brightness": 56,
+    "type": "bulb",
+    "color": [100, 100, 100]
+  },
+  {
+    "id": "48f33cf9-c8e0-41da-90e6-a8f163ff2a18",
+    "name": "Ceiling to bed",
+    "position": { "x": "0.674", "y": "-0.563", "z": "1.00" }
+    "on": true,
+    "brightness": 56,
+    "type": "bulb",
+    "color": [150, 53, 20]
+  }
+]

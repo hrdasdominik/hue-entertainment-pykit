@@ -1,24 +1,19 @@
 """_summary_"""
-
+from api.bridge.bridge import Bridge
+from api.light.light_model import Light
 from api.light.light_repository import LightRepository
-from api.light.light_service import LightService
-
-from api.scene.scene_repository import SceneRepository
-from api.scene.scene_service import SceneService
-
-from menu_manager import MenuManager
 
 
 def main():
     """_summary_"""
-    light_repository = LightRepository()
-    light_service = LightService(light_repository)
-    
-    scene_repository = SceneRepository()
-    scene_service = SceneService(scene_repository)
+    bridge = Bridge().get_ip_with_broker()
+    light_repository = LightRepository(bridge).generate_key()
+    lights: list[Light] = light_repository.get_lights()
 
-    menu_manager = MenuManager(light_service, scene_service)
-    menu_manager.start()
+    for light in lights:
+        light.on = False
+
+        light_repository.put_light(light)
 
 
 if __name__ == "__main__":
