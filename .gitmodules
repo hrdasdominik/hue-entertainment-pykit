@@ -1,0 +1,3 @@
+[submodule "light-emulator"]
+	path = light-emulator
+	url = git@github.com:DominikHanzevacki/musical-lights.git
