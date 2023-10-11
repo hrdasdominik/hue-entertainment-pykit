@@ -19,17 +19,20 @@ class Bridge:
     def get_ip_address(self) -> str:
         return self._internal_ip_address
 
+    def get_port(self):
+        return self._port
+
     def get_ip_with_broker(self):
-        logging.debug("Started 'get_ip_with_broker'")
-        if os.path.exists("logs/auth.txt"):
-            with open("logs/auth.txt", "r") as doc:
+        logging.debug(f"Started {self.__class__.__name__}.get_ip_with_broker")
+        if os.path.exists("logs/info.txt"):
+            with open("logs/info.txt", "r") as doc:
                 info: dict = json.loads(doc.readline().strip())
 
                 self._id = info["id"]
                 self._internal_ip_address = info["internalipaddress"]
                 self._port = info["port"]
 
-                logging.debug("Successfully loaded key")
+                logging.debug("Successfully loaded broker info")
                 return self
 
         response: Response = requests.get("https://discovery.meethue.com/")

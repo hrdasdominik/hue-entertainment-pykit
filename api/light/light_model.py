@@ -1,6 +1,7 @@
 """_summary_"""
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -41,6 +42,17 @@ class On:
 
 
 @dataclass
+class Identify:
+    """_summary_"""
+    identify: Any
+
+    def __eq__(self, other):
+        if not isinstance(other, Identify):
+            return False
+        return self.identify == other.identify
+
+
+@dataclass
 class Dimming:
     """_summary_"""
     brightness: str
@@ -71,16 +83,16 @@ class ColorTemperature:
 @dataclass
 class Color:
     """_summary_"""
-    xy: str
-    gamut: str
-    gamut_type: str
+    xy: dict[str, float]
+    # gamut: dict[str, float]
+    # gamut_type: str
 
     def __eq__(self, other):
         if not isinstance(other, Color):
             return False
-        return (self.xy == other.xy and
-                self.gamut == other.gamut and
-                self.gamut_type == other.gamut_type)
+        return (self.xy == other.xy) # and
+                # self.gamut == other.gamut and
+                # self.gamut_type == other.gamut_type)
 
 
 @dataclass
@@ -159,17 +171,18 @@ class Powerup:
 class Light:
     """_summary_"""
 
-    def __init__(self, data):
+    def __init__(self, data: dict[str, Any]):
         self.id = data['id']
         self.id_v1 = data['id_v1']
         self.owner = Owner(**data['owner'])
         self.metadata = Metadata(**data['metadata'])
+        # self.identify = Identify(**data['identify'])
         self.on = On(**data['on'])
         self.dimming = Dimming(**data['dimming'])
         self.dimming_delta = data['dimming_delta']
         self.color_temperature = ColorTemperature(**data['color_temperature'])
         self.color_temperature_delta = data['color_temperature_delta']
-        self.color = Color(**data['color'])
+        self.color = Color(data['color']["xy"])  # Color(**data['color'])
         self.dynamics = Dynamics(**data['dynamics'])
         self.alert = Alert(**data['alert'])
         self.signaling = Signaling(**data['signaling'])
@@ -184,45 +197,30 @@ class Light:
                 + f"On: {self.on.on}\nBrightness: {self.dimming.brightness}\n"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, Light):
             return False
-        return (self.id == other.id and
-                self.id_v1 == other.id_v1 and
-                self.owner == other.owner and
-                self.metadata == other.metadata and
-                self.on == other.on and
-                self.dimming == other.dimming and
-                self.dimming_delta == other.dimming_delta and
-                self.color_temperature == other.color_temperature and
-                self.color_temperature_delta == other.color_temperature_delta and
-                self.color == other.color and
-                self.dynamics == other.dynamics and
-                self.alert == other.alert and
-                self.signaling == other.signaling and
-                self.mode == other.mode and
-                self.effects == other.effects and
-                self.powerup == other.powerup and
-                self.type == other.type)
+        return self.to_dict() == other.to_dict()
 
     def to_dict(self) -> dict:
         """_summary_"""
         return {
-            'id': self.id,
-            'id_v1': self.id_v1,
-            'owner': self.owner.__dict__,
-            'metadata': self.metadata.__dict__,
-            'on': self.on.__dict__ if isinstance(self.on, On) else self.on,
-            'dimming': self.dimming.__dict__,
-            'dimming_delta': self.dimming_delta,
-            'color_temperature': self.color_temperature.__dict__,
-            'color_temperature_delta': self.color_temperature_delta,
+            # 'id': self.id,
+            # 'id_v1': self.id_v1,
+            # 'owner': self.owner.__dict__,
+            # 'metadata': self.metadata.__dict__,
+            # 'identify': {},
+            'on': self.on.__dict__,
+            # 'dimming': self.dimming.__dict__,
+            # 'dimming_delta': self.dimming_delta,
+            # 'color_temperature': self.color_temperature.__dict__,
+            # 'color_temperature_delta': self.color_temperature_delta,
             'color': self.color.__dict__,
-            'dynamics': self.dynamics.__dict__,
-            'alert': self.alert.__dict__,
-            'signaling': self.signaling.__dict__,
-            'mode': self.mode,
-            'effects': self.effects.__dict__,
-            'powerup': self.powerup.__dict__,
-            'type': self.type
+            # 'dynamics': self.dynamics.__dict__,
+            # 'alert': self.alert.__dict__,
+            # 'signaling': self.signaling.__dict__,
+            # 'mode': self.mode,
+            # 'effects': self.effects.__dict__,
+            # 'powerup': self.powerup.__dict__,
+            # 'type': self.type
         }

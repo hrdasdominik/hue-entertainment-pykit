@@ -7,7 +7,7 @@ import requests
 class ApiException(Exception):
     @staticmethod
     def response_status(response: requests.Response):
-        msg = f"Response status: {response.status_code, response.reason}"
+        msg = f"Response status: {response.status_code, response.reason, response.json()['errors'][0]['description']}"
         logging.error(msg)
         return ApiException(msg)
 
@@ -20,5 +20,11 @@ class ApiException(Exception):
     @staticmethod
     def invalid_response(data: dict[str, Any]):
         msg = f"Invalid response: {data}"
+        logging.error(msg)
+        return ApiException(msg)
+
+    @staticmethod
+    def bad_request(response):
+        msg = f"Bad request:\n{response.status_code, response.reason, response.json()['errors'][0]['description']}"
         logging.error(msg)
         return ApiException(msg)

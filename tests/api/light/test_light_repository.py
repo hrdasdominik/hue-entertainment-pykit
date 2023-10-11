@@ -24,7 +24,8 @@ class TestLightRepository(unittest.TestCase):
 
     @patch('api.bridge.bridge.Bridge')
     @patch('requests.request')
-    def test_get_light_without_identification_success(self, mock_request, bridge):
+    def test_get_light_without_identification_success(self, mock_request,
+                                                      bridge):
         with open("lights_mock.json") as f:
             self.mock_response.json.return_value = json.loads(f.read())
         mock_request.return_value = self.mock_response

@@ -1,9 +1,6 @@
 import requests
-import json
 import logging
 from typing import Optional, Any
-
-from aiohttp import ClientSession
 
 from api.base_repository import BaseRepository
 from api.bridge.bridge import Bridge
@@ -18,13 +15,11 @@ class LightRepository(BaseRepository):
     def __init__(self, bridge: Bridge):
         super().__init__(bridge)
 
-        self.set_default_url(self.get_default_url() + "resource/light")
-
     def get_lights(self, identification: Optional[str] = None) \
             -> list[Light]:
         logging.debug("Started 'get_light'")
 
-        url: str = self.get_default_url()
+        url: str = self.get_default_url() + "resource/light"
 
         if identification is not None:
             logging.debug(f"Light identification: {identification}")
@@ -36,7 +31,7 @@ class LightRepository(BaseRepository):
         if response.status_code == StatusCode.OK.value:
             data: list[dict[str, Any]] = response.json()["data"]
 
-            logging.debug(f"Response json: {data}")
+            logging.debug(f"json: {data}")
 
             lights: list[Light] = []
             for light in data:
@@ -47,15 +42,22 @@ class LightRepository(BaseRepository):
         else:
             raise ApiException.response_status(response)
 
-    async def put_light(self, light: Light, session: ClientSession):
+    def put_light(self, light: Light):
         """Update method for the light"""
         logging.debug(f"Started 'put_light' identification: {light.id}")
 
-        url: str = self.get_default_url() + f"/{light.id}"
+        url: str = self.get_default_url() + f"resource/light/{light.id}"
+
         headers = self.get_headers()
+
         payload = light.to_dict()
 
-        logging.debug(f"Request method['put_light'] = {payload}")
+        response = requests.request("PUT", url=url, headers=headers,
+                                    json=payload, verify=False)
 
-        return await session.request("PUT", url=url, headers=headers,
-                                     json=payload, ssl=False)
+        logging.debug(f"Request method['put_light'] = {payload}")
+        if response.status_code == (
+                StatusCode.OK.value or StatusCode.MULTI_STATUS.value):
+            logging.debug(f"Update successful: {response.json()}")
+        else:
+            raise ApiException.response_status(response)

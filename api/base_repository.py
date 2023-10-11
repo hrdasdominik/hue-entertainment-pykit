@@ -1,12 +1,13 @@
 import json
 import logging
 import os
-from typing import Any
+from typing import Any, Optional
 
 import requests
 
 from api.bridge.bridge import Bridge
 from api.exceptions.api_exception import ApiException
+from api.utils.status_code import StatusCode
 
 
 class BaseRepository:
@@ -17,7 +18,9 @@ class BaseRepository:
         self._username: str = ""
         self._client_key: str = ""
         self._headers: dict[str, str] = {
-            "hue-application-key": self._username}
+            "Content-Type": "application/json",
+            "hue-application-key": self._username
+        }
 
     def get_default_url(self):
         return self._default_url
@@ -31,8 +34,11 @@ class BaseRepository:
     def get_headers(self):
         return self._headers
 
+    def set_default_url(self, url: str):
+        self._default_url = url
+
     def generate_key(self):
-        logging.debug("Started 'generate_key'")
+        logging.debug(f"Started {self.__class__.__name__}.generate_key")
 
         if os.path.exists("logs/auth.txt"):
             with open("logs/auth.txt", "r") as doc:
@@ -53,10 +59,10 @@ class BaseRepository:
         }
         response = requests.request("POST", url=url, json=body, verify=False)
 
-        if response.status_code == 200:
+        if response.status_code == StatusCode.OK:
             data: dict[str, Any] = response.json()[0]
 
-            logging.debug(f"json: {data}")
+            logging.debug(f"{self.__class__.__name__}. response json:\n{data}")
 
             if "error" in data.keys():
                 raise ApiException.api_return_error(data)
@@ -74,7 +80,13 @@ class BaseRepository:
                 logging.debug("Successfully generated key")
             else:
                 raise ApiException.invalid_response(data)
+        elif response.status_code == StatusCode.BAD_REQUEST:
+            raise ApiException.bad_request(response)
         else:
             raise ApiException.response_status(response)
 
         return self
+
+    async def http_request(self, method: str, url: str, headers: dict,
+                           payload: Optional[dict] = None):
+        pass

@@ -1,112 +1,117 @@
 {
-    "errors": [],
-    "data": [
-        {
-            "id": "b6f8a28b-cc70-4917-8dbd-25deb8a2b40f",
-            "id_v1": "/lights/1",
-            "owner": {
-                "rid": "674d912d-3075-4455-bb2c-15ce0185eec9",
-                "rtype": "device"
-            },
-            "metadata": {
-                "name": "Hue color lamp 1",
-                "archetype": "sultan_bulb"
-            },
-            "on": {
-                "on": false
-            },
-            "dimming": {
-                "brightness": 100.0,
-                "min_dim_level": 0.20000000298023225
-            },
-            "dimming_delta": {},
-            "color_temperature": {
-                "mirek": null,
-                "mirek_valid": false,
-                "mirek_schema": {
-                    "mirek_minimum": 153,
-                    "mirek_maximum": 500
-                }
-            },
-            "color_temperature_delta": {},
-            "color": {
-                "xy": {
-                    "x": 0.4452,
-                    "y": 0.4068
-                },
-                "gamut": {
-                    "red": {
-                        "x": 0.6915,
-                        "y": 0.3083
-                    },
-                    "green": {
-                        "x": 0.17,
-                        "y": 0.7
-                    },
-                    "blue": {
-                        "x": 0.1532,
-                        "y": 0.0475
-                    }
-                },
-                "gamut_type": "C"
-            },
-            "dynamics": {
-                "status": "none",
-                "status_values": [
-                    "none",
-                    "dynamic_palette"
-                ],
-                "speed": 0.0,
-                "speed_valid": false
-            },
-            "alert": {
-                "action_values": [
-                    "breathe"
-                ]
-            },
-            "signaling": {
-                "signal_values": [
-                    "no_signal",
-                    "on_off"
-                ]
-            },
-            "mode": "normal",
-            "effects": {
-                "status_values": [
-                    "no_effect",
-                    "candle",
-                    "fire"
-                ],
-                "status": "no_effect",
-                "effect_values": [
-                    "no_effect",
-                    "candle",
-                    "fire"
-                ]
-            },
-            "powerup": {
-                "preset": "safety",
-                "configured": true,
-                "on": {
-                    "mode": "on",
-                    "on": {
-                        "on": true
-                    }
-                },
-                "dimming": {
-                    "mode": "dimming",
-                    "dimming": {
-                        "brightness": 100.0
-                    }
-                },
-                "color": {
-                    "mode": "color_temperature",
-                    "color_temperature": {
-                        "mirek": 366
-                    }
-                }
-            },
-            "type": "light"
+  "errors": [],
+  "data": [
+    {
+      "id": "45830f0b-1245-4484-b6f3-6bed682f9cc2",
+      "id_v1": "/lights/7",
+      "owner": {
+        "rid": "75513fed-a21a-448e-9133-c49552912c0d",
+        "rtype": "device"
+      },
+      "metadata": {
+        "name": "Hue color lamp 2",
+        "archetype": "table_shade"
+      },
+      "identify": {},
+      "on": {
+        "on": false
+      },
+      "dimming": {
+        "brightness": 100.0,
+        "min_dim_level": 0.20000000298023224
+      },
+      "dimming_delta": {},
+      "color_temperature": {
+        "mirek": 393,
+        "mirek_valid": true,
+        "mirek_schema": {
+          "mirek_minimum": 153,
+          "mirek_maximum": 500
         }
-    ]
+      },
+      "color_temperature_delta": {},
+      "color": {
+        "xy": {
+          "x": 0.4725,
+          "y": 0.413
+        },
+        "gamut": {
+          "red": {
+            "x": 0.6915,
+            "y": 0.3083
+          },
+          "green": {
+            "x": 0.17,
+            "y": 0.7
+          },
+          "blue": {
+            "x": 0.1532,
+            "y": 0.0475
+          }
+        },
+        "gamut_type": "C"
+      },
+      "dynamics": {
+        "status": "none",
+        "status_values": [
+          "none",
+          "dynamic_palette"
+        ],
+        "speed": 0.0,
+        "speed_valid": false
+      },
+      "alert": {
+        "action_values": [
+          "breathe"
+        ]
+      },
+      "signaling": {
+        "signal_values": [
+          "no_signal",
+          "on_off",
+          "on_off_color",
+          "alternating"
+        ]
+      },
+      "mode": "normal",
+      "effects": {
+        "status_values": [
+          "no_effect",
+          "candle",
+          "fire",
+          "prism"
+        ],
+        "status": "no_effect",
+        "effect_values": [
+          "no_effect",
+          "candle",
+          "fire",
+          "prism"
+        ]
+      },
+      "powerup": {
+        "preset": "safety",
+        "configured": true,
+        "on": {
+          "mode": "on",
+          "on": {
+            "on": true
+          }
+        },
+        "dimming": {
+          "mode": "dimming",
+          "dimming": {
+            "brightness": 100.0
+          }
+        },
+        "color": {
+          "mode": "color_temperature",
+          "color_temperature": {
+            "mirek": 366
+          }
+        }
+      },
+      "type": "light"
+    }
+  ]
 }
