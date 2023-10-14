@@ -1,0 +1,47 @@
+[
+  {
+    "id": "48f33cf9-c8e0-41da-90e6-a8f163ff2a17",
+    "name": "Hue lamp 1",
+    "position": { "x": "0.356", "y": "0.154", "z": "-0.521" },
+    "on": true,
+    "brightness": 100,
+    "type": "bulb",
+    "color": [100, 100, 100]
+  },
+  {
+    "id": "48f33cf9-c8e0-41da-90e6-a8f163ff2a17",
+    "name": "Hue lamp 2",
+    "position": { "x": "0.674", "y": "-0.563", "z": "1.00" },
+    "on": true,
+    "brightness": 56,
+    "type": "bulb",
+    "color": [150, 53, 20]
+  },
+  {
+    "id": "48f33cf9-c8e0-41da-90e6-a8f163ff2a18",
+    "name": "Hue lamp 3",
+    "position": { "x": "0.674", "y": "-0.563", "z": "1.00" },
+    "on": true,
+    "brightness": 18,
+    "type": "bulb",
+    "color": [100, 150, 40]
+  },
+  {
+    "id": "48f33cf9-c8e0-41da-90e6-a8f163ff2a19",
+    "name": "Hue lamp 4",
+    "position": { "x": "0.674", "y": "-0.563", "z": "1.00" },
+    "on": true,
+    "brightness": 56,
+    "type": "bulb",
+    "color": [73, 102, 60]
+  },
+  {
+    "id": "48f33cf9-c8e0-41da-90e6-a8f163ff2a20",
+    "name": "Hue lamp 5",
+    "position": { "x": "0.841", "y": "-0.330", "z": "0.20" },
+    "on": true,
+    "brightness": 38,
+    "type": "bulb",
+    "color": [142, 30, 60]
+  }
+]
