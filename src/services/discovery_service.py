@@ -11,14 +11,13 @@ import re
 from typing import Optional
 
 import requests
-from zeroconf import Zeroconf, ServiceBrowser
-
 from bridge.bridge_repository import BridgeRepository
 from exceptions.bridge_exception import BridgeException
 from models.bridge import Bridge
 from network.mdns import Mdns
 from utils.file_handler import FileHandler
 from utils.status_code import StatusCode
+from zeroconf import Zeroconf, ServiceBrowser
 
 
 # pylint: disable=too-few-public-methods
@@ -83,10 +82,23 @@ class DiscoveryService:
             self._discover_via_mdns,
             self._discover_via_cloud,
         ]
+        supported_bridges = {}
+
         if ip_address:
+            try:
+                bridges = self._filter_supported_bridges(self._discover_manually(ip_address))
+                if bridges:
+                    for bridge in bridges:
+                        supported_bridges[bridge.get_name()] = bridge
+                    return supported_bridges
+            except (json.JSONDecodeError, ValueError) as e:
+                logging.error(e)
+            except BridgeException as e:
+                logging.error(e)
+            except FileNotFoundError as e:
+                logging.warning(e)
             methods.insert(0, lambda: self._discover_manually(ip_address))
 
-        supported_bridges = {}
         for method in methods:
             try:
                 bridges = self._filter_supported_bridges(method())

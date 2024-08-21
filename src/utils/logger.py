@@ -69,12 +69,17 @@ def setup_logging(
         file_handler = RotatingFileHandler(
             log_file_path, mode="a", maxBytes=max_file_size, backupCount=backup_count
         )
+        file_handler.setLevel(level)
         file_handler.setFormatter(
             logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
         )
 
         console_handler = logging.StreamHandler()
+        console_handler.setLevel(level)
         console_formatter = ColoredFormatter("%(asctime)s [%(levelname)s] %(message)s")
         console_handler.setFormatter(console_formatter)
 
         logging.basicConfig(level=level, handlers=[file_handler, console_handler])
+    else:
+        logging.getLogger().handlers[0].setLevel(level)
+        logging.getLogger().handlers[1].setLevel(level)
