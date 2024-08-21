@@ -193,10 +193,7 @@ class Entertainment:
             EntertainmentConfiguration | None: The requested configuration if found, otherwise None.
         """
 
-        for config in self._entertainment_configs.values():
-            if config.id == config_id:
-                return config
-        return None
+        return self._entertainment_configs[config_id]
 
     def get_ent_conf_repo(self) -> EntertainmentConfigurationRepository:
         """Returns the entertainment configuration repository.
