@@ -1,21 +1,21 @@
 import logging
-from typing import Optional
 
-from bridge.bridge_repository import BridgeRepository
-from bridge.entertainment_configuration_repository import EntertainmentConfigurationRepository
-from models.entertainment_configuration import EntertainmentConfiguration
-from network.dtls import Dtls
-from network.mdns import Mdns
-from services.discovery_service import DiscoveryService
-from services.streaming_service import StreamingService
-from models.bridge import Bridge
-from utils.logger import setup_logging
+from src.hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
+from src.hue_entertainment_pykit.bridge.entertainment_configuration_repository import EntertainmentConfigurationRepository
+from src.hue_entertainment_pykit.models.bridge import Bridge
+from src.hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration
+from src.hue_entertainment_pykit.models.light import LightBase
+from src.hue_entertainment_pykit.network.dtls import Dtls
+from src.hue_entertainment_pykit.network.mdns import Mdns
+from src.hue_entertainment_pykit.services.discovery_service import DiscoveryService
+from src.hue_entertainment_pykit.services.streaming_service import StreamingService
+from src.hue_entertainment_pykit.utils.logger import setup_logging
 
 
 class HueEntertainmentPyKit:
     def __init__(self):
         setup_logging(
-            level=logging.DEBUG,
+            level=logging.WARNING,
             max_file_size=1024 * 1024 * 5,
             backup_count=3
         )
@@ -36,6 +36,9 @@ class HueEntertainmentPyKit:
         if self._streaming is None:
             raise Exception("Stream not started due to streaming being None")
 
+        if self._streaming.is_stream_active() is True:
+            raise Exception("Stream is already active")
+
         self._streaming.start_stream()
 
     def stop_stream(self):
@@ -52,22 +55,10 @@ class HueEntertainmentPyKit:
 
         self._streaming.set_color_space(color_space)
 
-    def set_single_light(self, color_with_id: tuple[float, float, float, int] | tuple[int, int, int, int]):
-        self._streaming.set_input([color_with_id])
-
-    def set_group_lights(self, color_id_list: list[tuple[float, float, float, int] | tuple[int, int, int, int]]):
-        self._streaming.set_input(color_id_list)
-
-    def get_all_light_ids(self):
-        if self._entertainment_configuration is None:
-            raise Exception('No entertainment configuration')
-
-        channel_list = []
-
-        channels = self._entertainment_configuration.channels
-        for channel in channels:
-            channel_list.append((channel.channel_id, channel.position))
-        return channel_list
+    def set_lights_functions(self,
+                             light_list: list[LightBase],
+                             transition_time: float = 0.0):
+        self._streaming.set_input(light_list, transition_time)
 
     def get_all_bridges(self) -> dict[str, Bridge]:
         if not self._bridges:
@@ -75,11 +66,17 @@ class HueEntertainmentPyKit:
         return self._bridges
 
     def set_bridge(self, bridge: Bridge):
+        self._bridge_repository.set_base_url(bridge.get_ip_address())
+        self._bridge_repository.set_headers({"hue-application-key": bridge.get_username()})
+
         self._entertainment_configuration_repository = EntertainmentConfigurationRepository(bridge)
         self._dtls = Dtls(bridge)
 
         if not self._entertainment_configurations:
             self._entertainment_configurations = self._entertainment_configuration_repository.fetch_configurations()
+
+    def get_entertainment_configuration(self):
+        return self._entertainment_configuration
 
     def get_entertainment_configurations(self):
         return self._entertainment_configurations
@@ -93,12 +90,19 @@ class HueEntertainmentPyKit:
             self._dtls
         )
 
+    def get_lights(self):
+        return self._bridge_repository.fetch_lights()
+
+    def get_entertainment_lights(self):
+        return self._bridge_repository.fetch_entertainment_lights(self._entertainment_configuration)
+
     def connect_manually_to_bridge(self, ip_address: str):
         ...
 
+    @classmethod
     def modify_log_config(
-            self,
-            level: int = logging.WARNING,
+            cls,
+            level: int = logging.DEBUG,
             max_file_size: int = 1024 * 1024 * 5,
             backup_count: int = 3,
     ):

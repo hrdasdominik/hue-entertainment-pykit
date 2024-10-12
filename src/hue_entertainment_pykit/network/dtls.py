@@ -19,7 +19,7 @@ from typing import Tuple, List
 
 from mbedtls.tls import TLSWrappedSocket, DTLSConfiguration, ClientContext
 
-from models.bridge import Bridge
+from src.hue_entertainment_pykit.models.bridge import Bridge
 
 
 class Dtls:

@@ -4,6 +4,10 @@ These include RGB to different bit depths, RGB to XYB color space conversions, a
 The Converter class supports color manipulations for the Philips Hue lighting system, ensuring precise and
 efficient color data handling.
 """
+from typing import Union
+
+from src.hue_entertainment_pykit.exceptions.not_valid_color import NotValidColor
+from src.hue_entertainment_pykit.utils.color_validator import ColorValidator
 
 
 class Converter:
@@ -13,8 +17,8 @@ class Converter:
     the Philips Hue system.
     """
 
-    @staticmethod
-    def _normalize_rgb(rgb8):
+    @classmethod
+    def _normalize_rgb(cls, rgb8: tuple[int, int, int]):
         """
         Normalize the RGB values from 0-255 range to 0-1 range.
 
@@ -28,7 +32,16 @@ class Converter:
         return [value / 255.0 for value in rgb8]
 
     @staticmethod
-    def rgb8_to_rgb16(rgb8: tuple[int, int, int]):
+    def xyb_or_rgb8_to_rgb16(color: Union[tuple[int, int, int], tuple[float, float, float]]) -> tuple[int, int, int]:
+        if ColorValidator.is_valid_xyb(color):
+            return Converter._xyb_to_rgb16(color)
+        elif ColorValidator.is_valid_rgb8(color):
+            return Converter._rgb8_to_rgb16(color)
+        else:
+            raise NotValidColor("Color %s is neither valid RGB 8 or XYB type", color)
+
+    @classmethod
+    def _rgb8_to_rgb16(cls, rgb8: tuple[int, int, int]):
         """
         Convert 8-bit RGB values to 16-bit RGB values.
 
@@ -41,11 +54,11 @@ class Converter:
 
         return tuple(int(value * 65535) for value in Converter._normalize_rgb(rgb8))
 
-    @staticmethod
-    def xyb_to_rgb16(xyb: tuple[float, float, float]):
+    @classmethod
+    def _xyb_to_rgb16(cls, xyb: tuple[float, float, float]):
         """
         Converts XYB color values to 16-bit RGB values. The XYB format is used in lighting to represent
-        color in terms of chromaticity and brightness.
+        color in terms of chromatic and brightness.
 
         Parameters:
             xyb (tuple[float, float, float]): Color values in XYB format.

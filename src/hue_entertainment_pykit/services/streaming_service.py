@@ -10,17 +10,21 @@ import struct
 import threading
 import time
 from socket import error as SocketError
-from typing import Union
+from typing import Union, Optional
 
-from models.payload import Payload
-from models.entertainment_configuration import (
-    EntertainmentConfiguration,
-)
-from bridge.entertainment_configuration_repository import (
+from src.hue_entertainment_pykit.bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from network.dtls import Dtls
-from utils.converter import Converter
+from src.hue_entertainment_pykit.models.entertainment_configuration import (
+    EntertainmentConfiguration,
+)
+from src.hue_entertainment_pykit.models.payload import Payload
+from src.hue_entertainment_pykit.network.dtls import Dtls
+from src.hue_entertainment_pykit.utils.converter import Converter
+
+from src.hue_entertainment_pykit.models.light import LightBase
+
+from src.hue_entertainment_pykit.exceptions.connection_exception import ConnectionException
 
 
 # pylint: disable=too-many-instance-attributes
@@ -56,7 +60,7 @@ class StreamingService:
             dtls_service (Dtls): Service for managing DTLS (Datagram Transport Layer Security) connections.
         """
 
-        self._entertainment_config = entertainment_configuration
+        self._entertainment_configuration = entertainment_configuration
         self._entertainment_configuration_repository = (
             entertainment_configuration_repository
         )
@@ -68,7 +72,7 @@ class StreamingService:
         self._reserved = b"\x00\x00"
         self._color_space = self._DEFAULT_CHANNEL_VALUE
         self._reserved2 = b"\x00"
-        self._entertainment_id = self._entertainment_config.id.encode("utf-8")
+        self._entertainment_id = self._entertainment_configuration.id.encode("utf-8")
 
         self._channel_data = b""
         self._last_message = self._init_message()
@@ -115,7 +119,7 @@ class StreamingService:
 
         payload = (
             Payload()
-            .set_key_and_or_value("id", self._entertainment_config.id)
+            .set_key_and_or_value("id", self._entertainment_configuration.id)
             .set_key_and_or_value("action", "start")
         )
         self._entertainment_configuration_repository.put_configuration(payload)
@@ -126,10 +130,10 @@ class StreamingService:
             logging.exception("Error during handshake for DTLS connection.")
             self._dtls_service.close_socket()
             stop_payload = Payload()
-            stop_payload.set_key_and_or_value("id", self._entertainment_config.id)
+            stop_payload.set_key_and_or_value("id", self._entertainment_configuration.id)
             stop_payload.set_key_and_or_value("action", "stop")
             self._entertainment_configuration_repository.put_configuration(stop_payload)
-            raise Exception("Failed DTLS handshake")
+            raise ConnectionException("Failed DTLS handshake")
 
         self._is_connection_alive = True
 
@@ -159,10 +163,11 @@ class StreamingService:
 
             payload = (
                 Payload()
-                .set_key_and_or_value("id", self._entertainment_config.id)
+                .set_key_and_or_value("id", self._entertainment_configuration.id)
                 .set_key_and_or_value("action", "stop")
             )
             self._entertainment_configuration_repository.put_configuration(payload)
+            logging.info("Stream stopped successfully")
         else:
             raise SocketError(
                 "Unable to stop stream: DTLS socket is not available or stream is not active."
@@ -170,30 +175,24 @@ class StreamingService:
 
     def set_input(
             self,
-            user_input_list: list[Union[tuple[int, int, int, int], tuple[float, float, float, int]]],
+            light_list: list[LightBase],
+            # transition_time: Optional[float] = 0.0
     ):
         """Sets the user input for processing.
 
         Args:
-            user_input_list (Union[tuple[int, int, int, int], tuple[float, float, float, int]]): The user input data, either
+            light_list (list[LightBase]): The user input data, either
             in RGB8 or XYB format, along with a light identifier. The input should be a tuple containing either
             three integer values (RGB) or three float values (XYB) followed by the light identifier as a string.
-
-            RGB8 min(0) - max(255)
-            XYB min(0.0) - max (1.0)
+            transition_time (float)
         """
+        processed_user_input = []
+        for light in light_list:
+            rgb16_and_light_id: tuple[int, int, int, int] = Converter.xyb_or_rgb8_to_rgb16(light.get_colors()) + (
+                light.get_id())
+            processed_user_input.append(rgb16_and_light_id)
 
-        for user_input in user_input_list:
-            rx, gy, bb, light_id = user_input
-            color = rx, gy, bb
-            logging.debug("Setting color(%s, %s, %s) on light %s", rx, gy, bb, light_id)
-            if not self._is_valid_rgb8(color) and not self._is_valid_xyb(color):
-                logging.error(
-                    "Invalid input: values must be a valid rgb8 (0 - 255) or xyb (0.0 - 1.0)"
-                )
-                user_input_list.remove(user_input)
-
-        self._input_queue.put(user_input_list)
+        self._input_queue.put(processed_user_input)
 
     def _build_message(self, channel_data_list):
         """Constructs a message for streaming with the given channel data.
@@ -229,7 +228,7 @@ class StreamingService:
             bytes: The initialized message.
         """
 
-        x, y, b = Converter.xyb_to_rgb16((0.0, 0.0, 0.0))
+        x, y, b = Converter.xyb_or_rgb8_to_rgb16((0.0, 0.0, 0.0))
 
         self._channel_data = self._DEFAULT_CHANNEL_VALUE
         self._channel_data += struct.pack(">HHH", x, y, b)
@@ -267,7 +266,7 @@ class StreamingService:
         while self._is_connection_alive:
             try:
                 user_input = self._input_queue.get(
-                    timeout=1
+                    timeout=0.5
                 )  # using timeout to avoid busy waiting
                 self._process_user_input(user_input)
             except queue.Empty:
@@ -297,57 +296,34 @@ class StreamingService:
             except OSError as e:
                 self._reconnect_attempts += 1
                 logging.error(
-                    "Failed to reconnect attempt %s due to network error: %s",
+                    "Failed to reconnect attempt %s due to NETWORK error: %s",
                     self._reconnect_attempts,
                     e,
                 )
             except Exception as e:  # pylint: disable=broad-except
                 self._reconnect_attempts += 1
                 logging.error(
-                    "Failed to reconnect attempt %s due to unexpected error: %s",
+                    "Failed to reconnect attempt %s due to UNEXPECTED error: %s",
                     self._reconnect_attempts,
                     e,
                 )
 
-    def _process_user_input(self,
-                            user_input_list: list[Union[tuple[int, int, int, int], tuple[float, float, float, int]]]):
+    def _process_user_input(self, user_input_list: list[tuple[int, int, int, int]]):
         """Processes the user input received.
 
         Args:
-            user_input_list: The user input to process. The input is expected to be a tuple of either
-            RGB8 or XYB color values along with a light identifier.
+            user_input_list: list[tuple[int, int, int, int]] The user input to process.
+            The input is expected to be a tuple of RGB16 color values along with a light identifier as last int.
         """
+        logging.debug("Processing user input: %s", user_input_list)
         if not isinstance(user_input_list, list) and not len(user_input_list) > 0:
-            raise ValueError(f"Unexpected input type: {type(user_input_list)}")
-
-        for user_input in user_input_list:
-            rx, gy, bb, light_id = user_input
-            color = (rx, gy, bb)
-            if not self._is_valid_rgb8(color) and self._is_valid_xyb(color):
-                raise ValueError(
-                    "Invalid input. Neither inputs are rgb8 or xyb compatible."
-                )
+            raise ValueError(f"Unexpected input type: {type(user_input_list)} or empty list sent")
 
         logging.debug("Processing user input: %s", user_input_list)
-        self._send_color_to_light(user_input_list)
-
-    def _send_color_to_light(
-            self, user_input_list: list[Union[tuple[int, int, int, int], tuple[float, float, float, int]]]
-    ):
-        """Sends color data to a light.
-
-        Args:
-            user_input_list (list[Union[tuple[int, int, int], tuple[float, float, float]]]): The color data to send,
-            either as RGB8 or XYB values.
-
-        This method packages the color data and sends it over the DTLS connection to the specified light.
-        """
-
         channel_data_list = []
         for user_input in user_input_list:
-            rx, gy, bb, light_id = user_input
-            color = (rx, gy, bb)
-            channel_data_list.append(self._pack_color_data(color, light_id))
+            r, g, b, light_id = user_input
+            channel_data_list.append(self._pack_color_data((r, g, b), light_id))
         try:
             self._channel_data = channel_data_list
             message = self._build_message(self._channel_data)
@@ -366,54 +342,25 @@ class StreamingService:
                 logging.info("Attempting to reconnect...")
                 self._attempt_reconnect()
 
+    @classmethod
     def _pack_color_data(
-            self, color: Union[tuple[int, int, int], tuple[float, float, float]], value: int
+            cls, color: Union[tuple[int, int, int], tuple[float, float, float]], light_id: int
     ) -> bytes:
         """Packs the given color data into bytes for transmission.
 
         Args:
             color (Union[tuple[int, int, int], tuple[float, float, float]]): The color data in either
             RGB8 or XYB format.
-            value (int): An integer value associated with the color data, such as the light's ID or channel number.
+            light_id (int): An integer value associated with the color data, such as the light's ID or channel number.
 
         Returns:
             bytes: The packed color data in byte format, ready for transmission.
         """
 
         channel_data = b""
-        channel_data += struct.pack(">B", value)
+        channel_data += struct.pack(">B", light_id)
 
-        # TODO: this is redundant check again since I have the check already in _process_user_input()
-        if self._is_valid_xyb(color):
-            rx, gy, bb = Converter.xyb_to_rgb16(color)
-        else:
-            rx, gy, bb = Converter.rgb8_to_rgb16(color)
+        rx = color[0], gy = color[1], bb = color[2]
 
         logging.debug("Converted values: %s, %s, %s", rx, gy, bb)
         return channel_data + struct.pack(">HHH", rx, gy, bb)
-
-    @classmethod
-    def _is_valid_rgb8(cls, rgb8: tuple[int, int, int]) -> bool:
-        """Check if the given RGB8 color is valid.
-
-        Args:
-            rgb8 (tuple[int, int, int]): A tuple representing the RGB8 color.
-
-        Returns:
-            bool: True if the color is a valid RGB8, False otherwise.
-        """
-
-        return all(0 <= value <= 255 for value in rgb8)
-
-    @classmethod
-    def _is_valid_xyb(cls, xyb: tuple[float, float, float]) -> bool:
-        """Check if the given XYB color is valid.
-
-        Args:
-            xyb (tuple[float, float, float]): A tuple representing the XYB color.
-
-        Returns:
-            bool: True if the color is a valid XYB, False otherwise.
-        """
-
-        return all(0.0 <= value <= 1.0 for value in xyb)

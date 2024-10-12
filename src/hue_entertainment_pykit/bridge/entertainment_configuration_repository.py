@@ -20,12 +20,12 @@ import logging
 import requests
 from requests import Response
 
-from models.bridge import Bridge
-from models.payload import Payload
-from models.entertainment_configuration import EntertainmentConfiguration
-from exceptions.api_exception import ApiException
+from src.hue_entertainment_pykit.models.bridge import Bridge
+from src.hue_entertainment_pykit.models.payload import Payload
+from src.hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration
+from src.hue_entertainment_pykit.exceptions.api_exception import ApiException
 
-from utils.status_code import StatusCode
+from src.hue_entertainment_pykit.utils.status_code import StatusCode
 
 
 class EntertainmentConfigurationRepository:
@@ -86,7 +86,7 @@ class EntertainmentConfigurationRepository:
             headers=self._headers,
             json=payload.get_data() if payload else None,
             verify=False,
-            timeout=5,
+            timeout=10,
         )
         if response.status_code != StatusCode.OK.value:
             raise ApiException(
@@ -108,7 +108,19 @@ class EntertainmentConfigurationRepository:
         data = response.json()["data"]
         entertainment_configs = {}
         for item in data:
-            entertainment_configs[item["id"]] = EntertainmentConfiguration(item)
+            entertainment_configs[item["id"]] = EntertainmentConfiguration(
+                item["id"],
+                item["type"],
+                item["id_v1"],
+                item["name"],
+                item["status"],
+                item["configuration_type"],
+                item["metadata"],
+                item["stream_proxy"],
+                item["channels"],
+                item["locations"],
+                item["light_services"]
+            )
         return entertainment_configs
 
     def put_configuration(self, payload: Payload):

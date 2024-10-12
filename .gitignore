@@ -5,3 +5,4 @@ logs/
 data/
 /.run/
 dist
+*.egg-info

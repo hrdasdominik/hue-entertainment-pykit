@@ -18,10 +18,10 @@ from unittest.mock import patch, MagicMock
 
 from requests import Response
 
-from bridge.bridge_repository import BridgeRepository
-from exceptions.bridge_exception import BridgeException
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
+from hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
+from hue_entertainment_pykit.exceptions.bridge_exception import BridgeException
+from hue_entertainment_pykit.utils.file_handler import FileHandler
+from hue_entertainment_pykit.utils.status_code import StatusCode
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init

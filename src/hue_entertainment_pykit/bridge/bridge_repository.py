@@ -9,11 +9,14 @@ import logging
 from typing import Any
 
 import requests
+from src.hue_entertainment_pykit.exceptions.bridge_exception import BridgeException
+from src.hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration, EntertainmentChannel
+from src.hue_entertainment_pykit.models.light import LightXYB, LightBase
+from src.hue_entertainment_pykit.utils.endpoint import Endpoint
+from src.hue_entertainment_pykit.utils.file_handler import FileHandler
+from src.hue_entertainment_pykit.utils.http_method import HttpMethod
+from src.hue_entertainment_pykit.utils.status_code import StatusCode
 from requests import Response
-
-from exceptions.bridge_exception import BridgeException
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
 
 
 # pylint: disable=too-few-public-methods
@@ -88,171 +91,6 @@ class BridgeRepository:
 
         self._base_url = f"https://{ip_address}"
 
-    def _load_auth_data(self) -> dict[str, Any]:
-        """
-        Loads authentication data from a predefined file path.
-
-        This method reads a JSON file containing authentication information necessary for interacting
-        with the Philips Hue Bridge. The authentication data typically includes credentials like username
-        and client key.
-
-        Returns:
-            dict: A dictionary containing authentication data such as username and client key. The dictionary
-            will be empty if the file does not exist or is empty.
-
-        Note:
-            The file path is obtained from the FileHandler.AUTH_FILE_PATH constant.
-        """
-
-        return FileHandler.read_json(FileHandler.AUTH_FILE_PATH)
-
-    def _save_auth_data(self, data: dict):
-        """
-        Saves authentication data to a predefined file path.
-
-        This method writes the provided authentication data, such as username and client key, to a JSON file.
-        This data is essential for subsequent interactions with the Philips Hue Bridge.
-
-        Parameters:
-            data (dict): A dictionary containing authentication information like username and client key to be saved.
-
-        Note:
-            The file path is obtained from the FileHandler.AUTH_FILE_PATH constant. If the file does not exist,
-            it will be created.
-        """
-        logging.debug("saving data: %s", data)
-        FileHandler.write_json(FileHandler.AUTH_FILE_PATH, data)
-
-    def _make_request(self, method: str, endpoint: str, **kwargs) -> Response:
-        """
-        Makes an HTTP request to the Philips Hue Bridge.
-
-        Parameters:
-            method (str): The HTTP method to use for the request.
-            endpoint (str): The API endpoint to target.
-            **kwargs: Additional keyword arguments passed to the requests.request method,
-            such as payload data or custom headers.
-
-        Returns:
-            Response: The response object from the Hue Bridge.
-
-        Raises:
-            ValueError: If the base URL is not set.
-            BridgeException: If the response status code indicates an error.
-        """
-
-        if self._base_url == "https://":
-            raise ValueError("Base url is not set.")
-        url = f"{self._base_url}{endpoint}"
-        logging.debug("headers: %s", self._headers)
-        response = requests.request(
-            method, url, headers=self._headers, verify=False, timeout=5, **kwargs
-        )
-        if response.status_code != StatusCode.OK.value:
-            raise BridgeException(
-                f"Response status: {response.status_code}, {response.reason}"
-            )
-
-        logging.debug("response-headers: %s", response.headers)
-        logging.debug("response-body: %s", response.json())
-        return response
-
-    def _register_app_and_fetch_username_client_key(self) -> tuple[str, str]:
-        """
-        Registers the application with the Hue Bridge and retrieves the username and client key.
-
-        Attempts to load existing authentication data first. If not available, it registers the application
-        with the bridge and fetches new credentials.
-
-        Returns:
-            tuple[str, str]: A tuple containing the username and client key. If registration fails,
-            both values will be empty strings.
-        """
-
-        logging.info("Registering app and fetching username/client key")
-
-        try:
-            auth_data = self._load_auth_data()
-            if auth_data:
-                return auth_data["username"], auth_data["clientkey"]
-        except FileNotFoundError as e:
-            logging.warning("No existing username data at: %s", e)
-
-        response = self._make_request(
-            "POST", "/api", json={"devicetype": "hep#1", "generateclientkey": True}
-        )
-        data = response.json()[0]
-
-        if "error" in data:
-            raise BridgeException(f"Bridge error: {data['error']['description']}")
-        username, client_key = data["success"]["username"], data["success"]["clientkey"]
-        self._save_auth_data({"username": username, "clientkey": client_key})
-        return username, client_key
-
-    def _fetch_swversion(self) -> int:
-        """
-        Fetches the software version of the Philips Hue Bridge.
-
-        Returns:
-            int: The software version of the Bridge.
-        """
-
-        logging.info("Fetching Bridge software version")
-        response = self._make_request("GET", "/api/config")
-        return int(response.json()["swversion"])
-
-    def _fetch_hue_application_id(self) -> str:
-        """
-        Fetches the Hue Application ID from the Bridge.
-
-        Returns:
-            str: The Hue Application ID.
-        """
-
-        logging.info("Fetching Hue Application ID")
-        response = self._make_request("GET", "/auth/v1")
-        return response.headers["hue-application-id"]
-
-    def _fetch_bridge_name(self, rid: str) -> str:
-        """
-        Fetches the name of the Philips Hue Bridge.
-
-        Parameters:
-            rid (str): The resource identifier of the Bridge.
-
-        Returns:
-            str: The name of the Bridge.
-        """
-
-        logging.info("Fetching Bridge Name")
-        response = self._make_request("GET", f"/clip/v2/resource/device/{rid}")
-        return response.json()["data"][0]["metadata"]["name"]
-
-    def _fetch_bridge_id_and_rid(self) -> tuple[str, str]:
-        """
-        Fetches the Bridge ID and resource identifier (RID).
-
-        Returns:
-            tuple[str, str]: A tuple containing the Bridge ID and RID.
-        """
-
-        logging.info("Fetching Bridge ID and RID")
-        response = self._make_request("GET", "/clip/v2/resource/bridge")
-        data = response.json()["data"][0]
-        return data["id"], data["owner"]["rid"]
-
-    def _fetch_bridge_rid(self) -> str:
-        """
-        Fetches the resource identifier (RID) of the Philips Hue Bridge.
-
-        Returns:
-            str: The RID of the Bridge.
-        """
-
-        logging.info("Fetching Bridge RID")
-        response = self._make_request("GET", "/clip/v2/resource/bridge")
-        return response.json()["data"][0]["owner"]["rid"]
-
     def fetch_bridge_data(self, address: str) -> dict:
         """
         Fetches a comprehensive set of data about the Philips Hue Bridge.
@@ -305,3 +143,201 @@ class BridgeRepository:
             "name": name,
         }
         return data
+
+    def fetch_lights(self):
+        response_light = self._make_request(HttpMethod.GET, Endpoint.LIGHT.value)
+        return response_light.json()["data"]
+
+    def fetch_entertainment_lights(self, entertainment_configuration: EntertainmentConfiguration):
+        if entertainment_configuration:
+            channel_list: list[EntertainmentChannel] = entertainment_configuration.channels
+            response_entertainment = self._make_request(HttpMethod.GET, Endpoint.ENTERTAINMENT.value)
+            response_light = self._make_request(HttpMethod.GET, Endpoint.LIGHT.value)
+
+            entertainment_data_list = response_entertainment.json()["data"]
+            light_data_list = response_light.json()["data"]
+
+            light_names: list[LightBase] = []
+            for channel in channel_list:
+                rid = channel.members[0].service.rid
+
+                for entertainment_data in entertainment_data_list:
+                    if entertainment_data["id"] == rid:
+                        for light in light_data_list:
+                            if light["id"] == entertainment_data["renderer_reference"]["rid"]:
+                                light_name = light["metadata"]["name"]
+                                xy_dict = light["color"]["xy"]
+                                x = xy_dict["x"]
+                                y = xy_dict["y"]
+                                b = light["dimming"]["brightness"] / 100
+
+                                light_names.append(LightXYB(channel.channel_id, light_name, x, y, b))
+
+            return light_names
+        else:
+            raise ValueError("No entertainment configuration provided or entertainment configuration is None.")
+
+    def _load_auth_data(self) -> dict[str, Any]:
+        """
+        Loads authentication data from a predefined file path.
+
+        This method reads a JSON file containing authentication information necessary for interacting
+        with the Philips Hue Bridge. The authentication data typically includes credentials like username
+        and client key.
+
+        Returns:
+            dict: A dictionary containing authentication data such as username and client key. The dictionary
+            will be empty if the file does not exist or is empty.
+
+        Note:
+            The file path is obtained from the FileHandler.AUTH_FILE_PATH constant.
+        """
+
+        return FileHandler.read_json(FileHandler.AUTH_FILE_PATH)
+
+    def _save_auth_data(self, data: dict):
+        """
+        Saves authentication data to a predefined file path.
+
+        This method writes the provided authentication data, such as username and client key, to a JSON file.
+        This data is essential for subsequent interactions with the Philips Hue Bridge.
+
+        Parameters:
+            data (dict): A dictionary containing authentication information like username and client key to be saved.
+
+        Note:
+            The file path is obtained from the FileHandler.AUTH_FILE_PATH constant. If the file does not exist,
+            it will be created.
+        """
+        logging.debug("saving data: %s", data)
+        FileHandler.write_json(FileHandler.AUTH_FILE_PATH, data)
+
+    def _make_request(self, method: HttpMethod, endpoint: str, **kwargs) -> Response:
+        """
+        Makes an HTTP request to the Philips Hue Bridge.
+
+        Parameters:
+            method (HttpMethod): The HTTP method to use for the request.
+            endpoint (str): The API endpoint to target.
+            **kwargs: Additional keyword arguments passed to the requests.request method,
+            such as payload data or custom headers.
+
+        Returns:
+            Response: The response object from the Hue Bridge.
+
+        Raises:
+            ValueError: If the base URL is not set.
+            BridgeException: If the response status code indicates an error.
+        """
+
+        if self._base_url == "https://":
+            raise ValueError("Base url is not set.")
+        url = f"{self._base_url}{endpoint}"
+        logging.debug("headers: %s", self._headers)
+        response = requests.request(
+            method.value, url, headers=self._headers, verify=False, timeout=5, **kwargs
+        )
+        if response.status_code != StatusCode.OK.value:
+            raise BridgeException(
+                f"Response status: {response.status_code}, {response.reason}"
+            )
+
+        logging.debug("response-headers: %s", response.headers)
+        logging.debug("response-body: %s", response.json())
+        return response
+
+    def _register_app_and_fetch_username_client_key(self) -> tuple[str, str]:
+        """
+        Registers the application with the Hue Bridge and retrieves the username and client key.
+
+        Attempts to load existing authentication data first. If not available, it registers the application
+        with the bridge and fetches new credentials.
+
+        Returns:
+            tuple[str, str]: A tuple containing the username and client key. If registration fails,
+            both values will be empty strings.
+        """
+
+        logging.info("Registering app and fetching username/client key")
+
+        try:
+            auth_data = self._load_auth_data()
+            if auth_data:
+                return auth_data["username"], auth_data["clientkey"]
+        except FileNotFoundError as e:
+            logging.warning("No existing username data at: %s", e)
+
+        response = self._make_request(
+            HttpMethod.POST, Endpoint.API.value, json={"devicetype": "hep#1", "generateclientkey": True}
+        )
+        data = response.json()[0]
+
+        if "error" in data:
+            raise BridgeException(f"Bridge error: {data['error']['description']}")
+        username, client_key = data["success"]["username"], data["success"]["clientkey"]
+        self._save_auth_data({"username": username, "clientkey": client_key})
+        return username, client_key
+
+    def _fetch_swversion(self) -> int:
+        """
+        Fetches the software version of the Philips Hue Bridge.
+
+        Returns:
+            int: The software version of the Bridge.
+        """
+
+        logging.info("Fetching Bridge software version")
+        response = self._make_request(HttpMethod.GET, Endpoint.CONFIG.value)
+        return int(response.json()["swversion"])
+
+    def _fetch_hue_application_id(self) -> str:
+        """
+        Fetches the Hue Application ID from the Bridge.
+
+        Returns:
+            str: The Hue Application ID.
+        """
+
+        logging.info("Fetching Hue Application ID")
+        response = self._make_request(HttpMethod.GET, Endpoint.AUTH_V1.value)
+        return response.headers["hue-application-id"]
+
+    def _fetch_bridge_name(self, rid: str) -> str:
+        """
+        Fetches the name of the Philips Hue Bridge.
+
+        Parameters:
+            rid (str): The resource identifier of the Bridge.
+
+        Returns:
+            str: The name of the Bridge.
+        """
+
+        logging.info("Fetching Bridge Name")
+        response = self._make_request(HttpMethod.GET, Endpoint.DEVICE.value + f"/{rid}")
+        return response.json()["data"][0]["metadata"]["name"]
+
+    def _fetch_bridge_id_and_rid(self) -> tuple[str, str]:
+        """
+        Fetches the Bridge ID and resource identifier (RID).
+
+        Returns:
+            tuple[str, str]: A tuple containing the Bridge ID and RID.
+        """
+
+        logging.info("Fetching Bridge ID and RID")
+        response = self._make_request(HttpMethod.GET, Endpoint.BRIDGE.value)
+        data = response.json()["data"][0]
+        return data["id"], data["owner"]["rid"]
+
+    def _fetch_bridge_rid(self) -> str:
+        """
+        Fetches the resource identifier (RID) of the Philips Hue Bridge.
+
+        Returns:
+            str: The RID of the Bridge.
+        """
+
+        logging.info("Fetching Bridge RID")
+        response = self._make_request(HttpMethod.GET, Endpoint.BRIDGE.value)
+        return response.json()["data"][0]["owner"]["rid"]

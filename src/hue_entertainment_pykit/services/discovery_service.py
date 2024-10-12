@@ -11,12 +11,12 @@ import re
 from typing import Optional
 
 import requests
-from bridge.bridge_repository import BridgeRepository
-from exceptions.bridge_exception import BridgeException
-from models.bridge import Bridge
-from network.mdns import Mdns
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
+from src.hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
+from src.hue_entertainment_pykit.exceptions.bridge_exception import BridgeException
+from src.hue_entertainment_pykit.models.bridge import Bridge
+from src.hue_entertainment_pykit.network.mdns import Mdns
+from src.hue_entertainment_pykit.utils.file_handler import FileHandler
+from src.hue_entertainment_pykit.utils.status_code import StatusCode
 from zeroconf import Zeroconf, ServiceBrowser
 
 

@@ -16,19 +16,19 @@ import logging
 import re
 from typing import Optional, Union
 
-from bridge.bridge_repository import BridgeRepository
-from bridge.entertainment_configuration_repository import (
+from hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
+from hue_entertainment_pykit.bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from models.bridge import Bridge
-from models.entertainment_configuration import (
+from hue_entertainment_pykit.models.bridge import Bridge
+from hue_entertainment_pykit.models.entertainment_configuration import (
     EntertainmentConfiguration,
 )
-from network.dtls import Dtls
-from network.mdns import Mdns
-from services.discovery_service import DiscoveryService
-from services.streaming_service import StreamingService
-from utils.logger import setup_logging
+from hue_entertainment_pykit.network.dtls import Dtls
+from hue_entertainment_pykit.network.mdns import Mdns
+from hue_entertainment_pykit.services.discovery_service import DiscoveryService
+from hue_entertainment_pykit.services.streaming_service import StreamingService
+from hue_entertainment_pykit.utils.logger import setup_logging
 
 
 def setup_logs(

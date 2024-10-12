@@ -75,6 +75,15 @@ class ProxyMode(Enum):
 
 
 @dataclass
+class Metadata:
+    """
+
+    """
+
+    name: str
+
+
+@dataclass
 class Position:
     """
     Represents a 3D coordinate position.
@@ -223,7 +232,18 @@ class EntertainmentConfiguration:
 
     #  pylint: disable=too-many-instance-attributes
 
-    def __init__(self, data: dict[str, Any]):
+    def __init__(self,
+                 identification: str,
+                 config_type: str,
+                 id_v1: str,
+                 name: str,
+                 status: str,
+                 configuration_type: dict,
+                 metadata: dict,
+                 stream_proxy: dict,
+                 channels: dict,
+                 locations: dict,
+                 light_services: dict):
         """
         Initializes the EntertainmentConfiguration with data provided in a dictionary format.
 
@@ -233,19 +253,18 @@ class EntertainmentConfiguration:
             'metadata', 'stream_proxy', 'channels', 'locations', and 'light_services'.
         """
 
-        self.id = data["id"]
-        self.type = data["type"]
-        self.id_v1 = data.get("id_v1")
-        self.name = data.get("name")
-        self.status = StatusTypes(data["status"])
-        self.configuration_type = ConfigurationTypes(data["configuration_type"])
-        self.metadata = data["metadata"]
+        self.id = identification
+        self.type = config_type
+        self.id_v1 = id_v1
+        self.name = name
+        self.status = StatusTypes(status)
+        self.configuration_type = ConfigurationTypes(configuration_type)
+        self.metadata = Metadata(name=metadata['name'])
 
-        proxy_data = data["stream_proxy"]
         self.stream_proxy = StreamProxy(
-            mode=ProxyMode(proxy_data["mode"]),
+            mode=ProxyMode(stream_proxy["mode"]),
             node=StreamProxyNode(
-                rtype=ResourceTypes(proxy_data["node"]["rtype"]), rid=proxy_data["node"]["rid"]
+                rtype=ResourceTypes(stream_proxy["node"]["rtype"]), rid=stream_proxy["node"]["rid"]
             ),
         )
 
@@ -264,7 +283,7 @@ class EntertainmentConfiguration:
                     for member in ch["members"]
                 ],
             )
-            for ch in data["channels"]
+            for ch in channels
         ]
 
         self.locations = Locations(
@@ -277,13 +296,13 @@ class EntertainmentConfiguration:
                     positions=[Position(**pos) for pos in loc["positions"]],
                     equalization_factor=loc["equalization_factor"],
                 )
-                for loc in data["locations"]["service_locations"]
+                for loc in locations["service_locations"]
             ]
         )
 
         self.light_services = [
             ResourceIdentifier(rid=ls["rid"], rtype=ResourceTypes(ls["rtype"]))
-            for ls in data.get("light_services", [])
+            for ls in light_services
         ]
 
     def to_dict(self) -> dict[str, Any]:
@@ -304,7 +323,9 @@ class EntertainmentConfiguration:
             "name": self.name,
             "status": self.status.value,
             "configuration_type": self.configuration_type.value,
-            "metadata": self.metadata,
+            "metadata": {
+                "name": self.metadata.name,
+            },
             "stream_proxy": {
                 "mode": self.stream_proxy.mode.value,
                 "node": {
@@ -344,6 +365,22 @@ class EntertainmentConfiguration:
                 {"rtype": ls.rtype.value, "rid": ls.rid} for ls in self.light_services
             ],
         }
+
+    @classmethod
+    def from_dict(cls, data_in_dict: dict[str, Any]):
+        return cls(
+            identification=data_in_dict["id"],
+            config_type=data_in_dict["type"],
+            id_v1=data_in_dict["id_v1"],
+            name=data_in_dict["name"],
+            status=data_in_dict["status"],
+            configuration_type=data_in_dict["configuration_type"],
+            metadata=data_in_dict["metadata"],
+            stream_proxy=data_in_dict["stream_proxy"],
+            channels=data_in_dict["channels"],
+            locations=data_in_dict["locations"],
+            light_services=data_in_dict["light_services"]
+        )
 
     def __eq__(self, other: Any) -> bool:
         """

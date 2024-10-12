@@ -11,8 +11,9 @@ Streaming classes from the hue_entertainment_pykit. It performs the following st
 """
 import time
 
-from src.hue_entertainment_pykit_new import HueEntertainmentPyKit
-from src.utils.logger import logging
+from src.hue_entertainment_pykit.hue_entertainment_pykit_new import HueEntertainmentPyKit
+from src.hue_entertainment_pykit.models.light import LightXYB
+from src.hue_entertainment_pykit.utils.logger import logging
 
 
 def example():
@@ -32,15 +33,14 @@ def example():
     hue_pykit.start_stream()
     hue_pykit.set_color_space("xyb")
 
-    hue_pykit.set_single_light([0.0, 0.18725, 1.0, 0])
+    light_list = []
+    light1 = LightXYB(1, 0.4, 0.3, 0.7)
+    light_list.append(light1)
 
-    time.sleep(1.0)
+    light2 = LightXYB(2, 0.2, 0.5, 0.6)
+    light_list.append(light2)
 
-    hue_pykit.set_group_lights([
-        (0.0, 0.63435, 1.0, 0),
-        (0.63435, 0.0, 1.0, 1),
-        (0.18725, 0.78634, 1.0, 2)
-    ])
+    hue_pykit.set_lights_functions(light_list)
 
     time.sleep(0.1)
 
