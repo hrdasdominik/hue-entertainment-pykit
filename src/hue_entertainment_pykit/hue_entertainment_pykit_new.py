@@ -1,7 +1,8 @@
 import logging
 
 from src.hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
-from src.hue_entertainment_pykit.bridge.entertainment_configuration_repository import EntertainmentConfigurationRepository
+from src.hue_entertainment_pykit.bridge.entertainment_configuration_repository import \
+    EntertainmentConfigurationRepository
 from src.hue_entertainment_pykit.models.bridge import Bridge
 from src.hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration
 from src.hue_entertainment_pykit.models.light import LightBase
@@ -58,7 +59,10 @@ class HueEntertainmentPyKit:
     def set_lights_functions(self,
                              light_list: list[LightBase],
                              transition_time: float = 0.0):
-        self._streaming.set_input(light_list, transition_time)
+        self._streaming.set_input(
+            light_list,
+            # transition_time
+        )
 
     def get_all_bridges(self) -> dict[str, Bridge]:
         if not self._bridges:

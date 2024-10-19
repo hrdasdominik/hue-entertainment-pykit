@@ -9,6 +9,8 @@ import logging
 from typing import Any
 
 import requests
+from requests import Response
+
 from src.hue_entertainment_pykit.exceptions.bridge_exception import BridgeException
 from src.hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration, EntertainmentChannel
 from src.hue_entertainment_pykit.models.light import LightXYB, LightBase
@@ -16,7 +18,6 @@ from src.hue_entertainment_pykit.utils.endpoint import Endpoint
 from src.hue_entertainment_pykit.utils.file_handler import FileHandler
 from src.hue_entertainment_pykit.utils.http_method import HttpMethod
 from src.hue_entertainment_pykit.utils.status_code import StatusCode
-from requests import Response
 
 
 # pylint: disable=too-few-public-methods

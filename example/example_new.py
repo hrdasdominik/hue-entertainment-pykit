@@ -34,11 +34,8 @@ def example():
     hue_pykit.set_color_space("xyb")
 
     light_list = []
-    light1 = LightXYB(1, 0.4, 0.3, 0.7)
+    light1 = LightXYB(1, "", 0.4, 0.3, 1.0)
     light_list.append(light1)
-
-    light2 = LightXYB(2, 0.2, 0.5, 0.6)
-    light_list.append(light2)
 
     hue_pykit.set_lights_functions(light_list)
 

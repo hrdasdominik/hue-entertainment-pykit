@@ -170,12 +170,12 @@ class Bridge:
             Bridge: An instance of Bridge with attributes set according to the data dictionary.
         """
         return cls(
-            identification=data.get("id"),
-            rid=data.get("rid"),
-            ip_address=data.get("internalipaddress"),
-            username=data.get("username"),
-            client_key=data.get("clientkey"),
-            name=data.get("name"),
-            swversion=data.get("swversion"),
-            hue_app_id=data.get("hue-application-id"),
+            identification=data["id"],
+            rid=data["rid"],
+            ip_address=data["internalipaddress"],
+            username=data["username"],
+            client_key=data["clientkey"],
+            name=data["name"],
+            swversion=data["swversion"],
+            hue_app_id=data["hue-application-id"],
         )

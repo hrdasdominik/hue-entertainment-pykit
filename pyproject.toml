@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=75.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -21,21 +21,21 @@ classifiers = [
     "Topic :: Utilities"
 ]
 dependencies = [
-    "certifi==2024.7.4",
-    "charset-normalizer==3.3.2",
+    "certifi==2024.8.30",
+    "charset-normalizer==3.4.0",
     "click==8.1.7",
     "colorama==0.4.6",
-    "idna==3.7",
+    "idna==3.10",
     "ifaddr==0.2.0",
     "mypy-extensions==1.0.0",
     "packaging==24.1",
     "pathspec==0.12.1",
-    "platformdirs==4.2.2",
+    "platformdirs==4.3.6",
     "python-mbedtls==2.10.1",
     "requests==2.32.3",
     "typing_extensions==4.12.2",
-    "urllib3==2.2.2",
-    "zeroconf==0.132.2"
+    "urllib3==2.2.3",
+    "zeroconf==0.135.0"
 ]
 keywords = ["philips", "hue", "lights", "entertainment", "api", "python"]
 
@@ -43,4 +43,4 @@ keywords = ["philips", "hue", "lights", "entertainment", "api", "python"]
 Repository = "https://github.com/hrdasdominik/hue-entertainment-pykit"
 
 [options]
-package_dir = "src"
+package_dir = "src/hue_entertainment_pykit"

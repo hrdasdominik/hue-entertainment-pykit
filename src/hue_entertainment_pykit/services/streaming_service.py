@@ -126,14 +126,14 @@ class StreamingService:
 
         try:
             self._dtls_service.do_handshake()
-        except Exception:
-            logging.exception("Error during handshake for DTLS connection.")
+        except Exception as e:
+            logging.exception(f"Error during handshake for DTLS connection.\n error: {e}")
             self._dtls_service.close_socket()
             stop_payload = Payload()
             stop_payload.set_key_and_or_value("id", self._entertainment_configuration.id)
             stop_payload.set_key_and_or_value("action", "stop")
             self._entertainment_configuration_repository.put_configuration(stop_payload)
-            raise ConnectionException("Failed DTLS handshake")
+            raise ConnectionException("Failed DTLS handshake cause of ", e)
 
         self._is_connection_alive = True
 
@@ -188,8 +188,8 @@ class StreamingService:
         """
         processed_user_input = []
         for light in light_list:
-            rgb16_and_light_id: tuple[int, int, int, int] = Converter.xyb_or_rgb8_to_rgb16(light.get_colors()) + (
-                light.get_id())
+            rgb16_and_light_id: tuple[int, int, int, int] = Converter.xyb_or_rgb8_to_rgb16(
+                light.get_colors()) + (light.get_id(),)
             processed_user_input.append(rgb16_and_light_id)
 
         self._input_queue.put(processed_user_input)
@@ -266,7 +266,7 @@ class StreamingService:
         while self._is_connection_alive:
             try:
                 user_input = self._input_queue.get(
-                    timeout=0.5
+                    timeout=1
                 )  # using timeout to avoid busy waiting
                 self._process_user_input(user_input)
             except queue.Empty:
@@ -360,7 +360,9 @@ class StreamingService:
         channel_data = b""
         channel_data += struct.pack(">B", light_id)
 
-        rx = color[0], gy = color[1], bb = color[2]
+        rx = color[0]
+        gy = color[1]
+        bb = color[2]
 
         logging.debug("Converted values: %s, %s, %s", rx, gy, bb)
         return channel_data + struct.pack(">HHH", rx, gy, bb)

@@ -18,14 +18,12 @@ Classes:
 import logging
 
 import requests
-from requests import Response
-
-from src.hue_entertainment_pykit.models.bridge import Bridge
-from src.hue_entertainment_pykit.models.payload import Payload
-from src.hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration
 from src.hue_entertainment_pykit.exceptions.api_exception import ApiException
-
+from src.hue_entertainment_pykit.models.bridge import Bridge
+from src.hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration
+from src.hue_entertainment_pykit.models.payload import Payload
 from src.hue_entertainment_pykit.utils.status_code import StatusCode
+from requests import Response
 
 
 class EntertainmentConfigurationRepository:
@@ -86,7 +84,7 @@ class EntertainmentConfigurationRepository:
             headers=self._headers,
             json=payload.get_data() if payload else None,
             verify=False,
-            timeout=10,
+            timeout=5,
         )
         if response.status_code != StatusCode.OK.value:
             raise ApiException(
