@@ -18,10 +18,10 @@ from unittest.mock import patch, MagicMock
 
 from requests import Response
 
-from bridge.bridge_repository import BridgeRepository
-from exceptions.bridge_exception import BridgeException
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
+from src.bridge.bridge_repository import BridgeRepository
+from src.exceptions.bridge_exception import BridgeException
+from src.utils.file_handler import FileHandler
+from src.utils.status_code import StatusCode
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
@@ -88,23 +88,23 @@ class TestBridgeRepository(unittest.TestCase):
         self.assertEqual(self.repo.get_headers()["Content-Type"], "application/json")
         self.assertEqual(self.repo.get_base_url(), "https://")
 
-    @patch("utils.file_handler.FileHandler.read_json")
+    @patch("src.utils.file_handler.FileHandler.read_json")
     def test_load_auth_data(self, mock_read_json):
         """
         Tests the loading of authentication data from a JSON file using the _load_auth_data method.
         """
 
-        mock_read_json.return_value = {"username": "user", "client_key": "key"}
+        mock_read_json.return_value = {"username": "user", "clientkey": "key"}
         data = self.repo._load_auth_data()
-        self.assertEqual(data, {"username": "user", "client_key": "key"})
+        self.assertEqual(data, {"username": "user", "clientkey": "key"})
 
-    @patch("utils.file_handler.FileHandler.write_json")
+    @patch("src.utils.file_handler.FileHandler.write_json")
     def test_save_auth_data(self, mock_write_json):
         """
         Tests the _save_auth_data method to ensure it correctly writes authentication data to a JSON file.
         """
 
-        auth_data = {"username": "user", "client_key": "key"}
+        auth_data = {"username": "user", "clientkey": "key"}
         self.repo._save_auth_data(auth_data)
         mock_write_json.assert_called_with(FileHandler.AUTH_FILE_PATH, auth_data)
 
@@ -145,57 +145,76 @@ class TestBridgeRepository(unittest.TestCase):
         with self.assertRaises(Exception):  # Replace with your specific exception class
             self.repo._make_request("GET", "/endpoint")
 
-    def test_register_app_and_fetch_username_client_key_already_loaded(self):
-        """
-        Tests the _register_app_and_fetch_username_client_key method to ensure it returns
-        existing authentication data without making a new registration request.
-        """
+    @patch.object(BridgeRepository, '_load_auth_data')
+    @patch.object(BridgeRepository, '_make_request')
+    @patch.object(BridgeRepository, '_save_auth_data')
+    def test_existing_auth_data(self, mock_save_auth_data, mock_make_request, mock_load_auth_data):
+        mock_load_auth_data.return_value = {"username": "test_user", "clientkey": "test_key"}
 
-        self.mock_load_auth_data = patch.object(self.repo, "_load_auth_data").start()
-        self.mock_save_auth_data = patch.object(self.repo, "_save_auth_data").start()
-        self.mock_load_auth_data.return_value = {"username": "user", "clientkey": "key"}
-        username, client_key = self.repo._register_app_and_fetch_username_client_key()
-        self.assertEqual(username, "user")
-        self.assertEqual(client_key, "key")
-        self.mock_save_auth_data.assert_not_called()
+        obj = BridgeRepository()
 
-    def test_register_app_and_fetch_username_client_key_success(self):
-        """
-        Tests the _register_app_and_fetch_username_client_key method to verify successful registration
-        and fetching of new authentication data.
-        """
+        username, client_key = obj._register_app_and_fetch_username_client_key()
+        self.assertEqual(username, "test_user")
+        self.assertEqual(client_key, "test_key")
 
-        self.repo.set_base_url("192.168.1.1")
-        self.mock_load_auth_data = patch.object(self.repo, "_load_auth_data").start()
-        self.mock_save_auth_data = patch.object(self.repo, "_save_auth_data").start()
-        self.mock_load_auth_data.return_value = {}
-        self.mock_response.json.return_value = [
-            {"success": {"username": "new_user", "clientkey": "new_key"}}
-        ]
+        mock_save_auth_data.assert_not_called()
+        mock_make_request.assert_not_called()
 
-        username, client_key = self.repo._register_app_and_fetch_username_client_key()
+    @patch.object(BridgeRepository, '_load_auth_data')
+    @patch.object(BridgeRepository, '_make_request')
+    @patch.object(BridgeRepository, '_save_auth_data')
+    def test_no_existing_auth_data_register_success(self, mock_save_auth_data, mock_make_request, mock_load_auth_data):
+        mock_load_auth_data.side_effect = FileNotFoundError()
+
+        mock_response = MagicMock()
+        mock_response.json.return_value = [{"success": {"username": "new_user", "clientkey": "new_key"}}]
+        mock_make_request.return_value = mock_response
+
+        obj = BridgeRepository()
+
+        username, client_key = obj._register_app_and_fetch_username_client_key()
         self.assertEqual(username, "new_user")
         self.assertEqual(client_key, "new_key")
-        self.mock_save_auth_data.assert_called_once_with(
-            {"username": "new_user", "clientkey": "new_key"}
-        )
 
-    def test_register_app_and_fetch_username_client_key_error(self):
-        """
-        Tests the _register_app_and_fetch_username_client_key method to ensure it raises
-        a BridgeException when the registration process fails.
-        """
+        mock_save_auth_data.assert_called_once_with({"username": "new_user", "clientkey": "new_key"})
 
-        self.repo.set_base_url("192.168.1.1")
-        self.mock_load_auth_data = patch.object(self.repo, "_load_auth_data").start()
-        self.mock_save_auth_data = patch.object(self.repo, "_save_auth_data").start()
-        self.mock_load_auth_data.return_value = {}
-        self.mock_response.json.return_value = [
-            {"error": {"description": "registration failed"}}
-        ]
+    @patch.object(BridgeRepository, '_load_auth_data')
+    @patch.object(BridgeRepository, '_make_request')
+    @patch.object(BridgeRepository, '_save_auth_data')
+    def test_bridge_error(self, mock_save_auth_data, mock_make_request, mock_load_auth_data):
+        mock_load_auth_data.side_effect = FileNotFoundError()
 
-        with self.assertRaises(BridgeException):
-            self.repo._register_app_and_fetch_username_client_key()
+        mock_response = MagicMock()
+        mock_response.json.return_value = [{"error": {"description": "Invalid registration"}}]
+        mock_make_request.return_value = mock_response
+
+        obj = BridgeRepository()
+
+        with self.assertRaises(BridgeException) as context:
+            obj._register_app_and_fetch_username_client_key()
+
+        self.assertIn("Bridge error: Invalid registration", str(context.exception))
+
+        mock_save_auth_data.assert_not_called()
+
+    @patch.object(BridgeRepository, '_load_auth_data')
+    @patch.object(BridgeRepository, '_make_request')
+    @patch.object(BridgeRepository, '_save_auth_data')
+    def test_no_existing_auth_data_empty_response(self, mock_save_auth_data, mock_make_request, mock_load_auth_data):
+        mock_load_auth_data.side_effect = FileNotFoundError()
+
+        mock_response = MagicMock()
+        mock_response.json.return_value = [{}]
+        mock_make_request.return_value = mock_response
+
+        obj = BridgeRepository()
+
+        with self.assertRaises(BridgeException) as context:
+            obj._register_app_and_fetch_username_client_key()
+
+        self.assertIn("Did not return any username or client key.", str(context.exception))
+
+        mock_save_auth_data.assert_not_called()
 
     def test_fetch_swversion(self):
         """

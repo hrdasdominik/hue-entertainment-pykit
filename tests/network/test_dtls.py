@@ -13,8 +13,8 @@ from unittest.mock import MagicMock
 
 from mbedtls.tls import TLSWrappedSocket
 
-from models.bridge import Bridge
-from network.dtls import Dtls
+from src.models.bridge import Bridge
+from src.network.dtls import Dtls
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init

@@ -10,7 +10,7 @@ Classes:
 
 import unittest
 
-from utils.converter import Converter
+from src.utils.converter import Converter
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
