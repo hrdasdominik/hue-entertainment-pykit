@@ -36,7 +36,7 @@ class Bridge:
         name (str): Human-readable name of the Bridge. Defaults to an empty string.
     """
 
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-positional-arguments
 
     def __init__(
         self,

@@ -183,6 +183,9 @@ class BridgeRepository:
         )
         data = response.json()[0]
 
+        if not data:
+            raise BridgeException("Did not return any username or client key.")
+
         if "error" in data:
             raise BridgeException(f"Bridge error: {data['error']['description']}")
         username, client_key = data["success"]["username"], data["success"]["clientkey"]
