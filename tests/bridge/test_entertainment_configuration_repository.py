@@ -12,13 +12,13 @@ Classes:
 import unittest
 from unittest.mock import MagicMock, patch
 
-from bridge.entertainment_configuration_repository import (
+from src.bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from exceptions.api_exception import ApiException
-from models.bridge import Bridge
-from models.entertainment_configuration import EntertainmentConfiguration
-from models.payload import Payload
+from src.exceptions.api_exception import ApiException
+from src.models.bridge import Bridge
+from src.models.entertainment_configuration import EntertainmentConfiguration
+from src.models.payload import Payload
 from tests.bridge.entertainment_configuration_mock import (
     ENTERTAINMENT_CONFIGURATION_MOCK,
 )

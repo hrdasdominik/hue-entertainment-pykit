@@ -18,13 +18,13 @@ from unittest.mock import MagicMock, patch, call
 
 from zeroconf import Zeroconf
 
-from models.bridge import Bridge
-from bridge.bridge_repository import BridgeRepository
-from services.discovery_service import DiscoveryService
-from network.mdns import Mdns
-from exceptions.bridge_exception import BridgeException
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
+from src.models.bridge import Bridge
+from src.bridge.bridge_repository import BridgeRepository
+from src.services.discovery_service import DiscoveryService
+from src.network.mdns import Mdns
+from src.exceptions.bridge_exception import BridgeException
+from src.utils.file_handler import FileHandler
+from src.utils.status_code import StatusCode
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
@@ -91,8 +91,8 @@ class TestDiscoveryService(unittest.TestCase):
             [call(bridge1), call(bridge2), call(bridge3)], any_order=True
         )
 
-    @patch("utils.file_handler.FileHandler.write_json")
-    @patch("models.bridge.Bridge.from_dict")
+    @patch("src.utils.file_handler.FileHandler.write_json")
+    @patch("src.models.bridge.Bridge.from_dict")
     def test_create_bridges_from_addresses(
         self, mock_bridge_from_dict, mock_write_json
     ):
@@ -164,8 +164,8 @@ class TestDiscoveryService(unittest.TestCase):
             any_order=True,
         )
 
-    @patch("services.discovery_service.Zeroconf")
-    @patch("services.discovery_service.ServiceBrowser")
+    @patch("src.services.discovery_service.Zeroconf")
+    @patch("src.services.discovery_service.ServiceBrowser")
     def test_discover_via_mdns(self, mock_service_browser, mock_zeroconf):
         """
         Tests the _discover_via_mdns method to verify bridge discovery using the mDNS protocol.
@@ -245,10 +245,10 @@ class TestDiscoveryService(unittest.TestCase):
         self.assertEqual(len(bridges), 1)
         self.assertEqual(bridges[0], mock_bridge)
 
-    @patch("services.discovery_service.DiscoveryService._filter_supported_bridges")
-    @patch("services.discovery_service.DiscoveryService._load_bridge_data")
-    @patch("services.discovery_service.DiscoveryService._discover_via_mdns")
-    @patch("services.discovery_service.DiscoveryService._discover_via_cloud")
+    @patch("src.services.discovery_service.DiscoveryService._filter_supported_bridges")
+    @patch("src.services.discovery_service.DiscoveryService._load_bridge_data")
+    @patch("src.services.discovery_service.DiscoveryService._discover_via_mdns")
+    @patch("src.services.discovery_service.DiscoveryService._discover_via_cloud")
     def test_discover(
         self,
         mock_discover_via_cloud,
@@ -279,7 +279,7 @@ class TestDiscoveryService(unittest.TestCase):
         self.assertTrue("SavedBridge" in bridges)
 
         with patch(
-            "services.discovery_service.DiscoveryService._discover_manually"
+            "src.services.discovery_service.DiscoveryService._discover_manually"
         ) as mock_discover_manually:
             mock_manual_bridge = MagicMock()
             mock_manual_bridge.get_name.return_value = "ManualBridge"
@@ -289,8 +289,8 @@ class TestDiscoveryService(unittest.TestCase):
             bridges = self.discovery_service.discover(ip_address="192.168.1.2")
             self.assertTrue("ManualBridge" in bridges)
 
-    @mock.patch("utils.file_handler.FileHandler.read_json")
-    @mock.patch("models.bridge.Bridge.from_dict")
+    @mock.patch("src.utils.file_handler.FileHandler.read_json")
+    @mock.patch("src.models.bridge.Bridge.from_dict")
     def test_load_bridge_data(self, mock_bridge_from_dict, mock_read_json):
         """
         Tests the _load_bridge_data method to verify loading bridge data from a file.
