@@ -35,7 +35,6 @@ dependencies = [
     "typing_extensions==4.12.2",
     "urllib3==2.2.3",
     "zeroconf==0.135.0"
-]
 keywords = ["philips", "hue", "lights", "entertainment", "api"]
 
 [project.urls]
