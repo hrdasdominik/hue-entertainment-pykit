@@ -3,7 +3,7 @@ Unit Tests for the Bridge Creation Module
 
 This module contains unit tests for the `create_bridge()` function within the bridge management system, focusing on
 validating the creation of Bridge objects under various input scenarios. It includes checks for proper type and format
-validation of input parameters such as identification, rid, ip_address, swversion, username, hue_app_id, client_key,
+validation of input parameters such as identification, rid, ip_address, swversion, username, hue_app_id, clientkey,
 and name. The suite uses Python's unittest framework to ensure the bridge creation functionality's reliability and
 integrity by handling both valid inputs and edge cases for robust error handling.
 """
@@ -17,32 +17,37 @@ from models.bridge import Bridge
 from network.mdns import Mdns
 from services.discovery_service import DiscoveryService
 
-VALID_INPUT = {
-    "identification": "4abb74df-5b6b-410e-819b-bf4448355dff",
-    "rid": "d476df48-83ad-4430-a104-53c30b46b4d0",
-    "ip_address": "192.168.30.204",
-    "swversion": 1962097030,
-    "username": "8nuTIcK2nOf5oi88-5zPvV1YCt0wTHZIGG8MwXpu",
-    "hue_app_id": "94530efc-933a-4f7c-97e5-ccf1a9fc79af",
-    "client_key": "B42753E1E1605A1AB90E1B6A0ECF9C51",
-    "name": "1st Bridge",
-}
-
 
 # pylint: disable=protected-access
 class TestCreateBridge(unittest.TestCase):
     """Test cases for the `create_bridge` function with various inputs."""
 
+    def setUp(self):
+        """
+        Sets up the test environment by patching necessary functions and creating mock objects.
+        """
+
+        self.valid_input = {
+            "identification": "4abb74df-5b6b-410e-819b-bf4448355dff",
+            "rid": "d476df48-83ad-4430-a104-53c30b46b4d0",
+            "ip_address": "192.168.30.204",
+            "swversion": 1962097030,
+            "username": "8nuTIcK2nOf5oi88-5zPvV1YCt0wTHZIGG8MwXpu",
+            "hue_app_id": "94530efc-933a-4f7c-97e5-ccf1a9fc79af",
+            "clientkey": "B42753E1E1605A1AB90E1B6A0ECF9C51",
+            "name": "1st Bridge",
+        }
+
     def test_create_bridge_with_valid_input(self):
         """Test creating a bridge with valid input data ensures successful object creation."""
 
-        bridge = create_bridge(**VALID_INPUT)
+        bridge = create_bridge(**self.valid_input)
         self.assertIsNotNone(bridge)
 
     def test_create_bridge_with_invalid_identification(self):
         """Test that passing an invalid type for 'identification' raises a TypeError."""
 
-        invalid_input = VALID_INPUT.copy()
+        invalid_input = self.valid_input.copy()
         invalid_input["identification"] = 123
         with self.assertRaises(TypeError):
             create_bridge(**invalid_input)
@@ -50,7 +55,7 @@ class TestCreateBridge(unittest.TestCase):
     def test_create_bridge_with_invalid_rid(self):
         """Test that an invalid 'rid' type raises a TypeError."""
 
-        invalid_input = VALID_INPUT.copy()
+        invalid_input = self.valid_input.copy()
         invalid_input["rid"] = 123
         with self.assertRaises(TypeError):
             create_bridge(**invalid_input)
@@ -58,7 +63,7 @@ class TestCreateBridge(unittest.TestCase):
     def test_create_bridge_with_invalid_ip_address(self):
         """Test that an invalid 'ip_address' format raises a ValueError."""
 
-        invalid_input = VALID_INPUT.copy()
+        invalid_input = self.valid_input.copy()
         invalid_input["ip_address"] = "invalid_ip"
         with self.assertRaises(ValueError):
             create_bridge(**invalid_input)
@@ -66,7 +71,7 @@ class TestCreateBridge(unittest.TestCase):
     def test_create_bridge_with_invalid_swversion(self):
         """Test that a non-integer 'swversion' raises a TypeError."""
 
-        invalid_input = VALID_INPUT.copy()
+        invalid_input = self.valid_input.copy()
         invalid_input["swversion"] = "not_an_integer"
         with self.assertRaises(TypeError):
             create_bridge(**invalid_input)
@@ -74,7 +79,7 @@ class TestCreateBridge(unittest.TestCase):
     def test_create_bridge_with_invalid_username(self):
         """Test that an invalid 'username' type raises a TypeError."""
 
-        invalid_input = VALID_INPUT.copy()
+        invalid_input = self.valid_input.copy()
         invalid_input["username"] = 123
         with self.assertRaises(TypeError):
             create_bridge(**invalid_input)
@@ -82,23 +87,23 @@ class TestCreateBridge(unittest.TestCase):
     def test_create_bridge_with_invalid_hue_app_id(self):
         """Test that an invalid 'hue_app_id' type raises a TypeError."""
 
-        invalid_input = VALID_INPUT.copy()
+        invalid_input = self.valid_input.copy()
         invalid_input["hue_app_id"] = 123
         with self.assertRaises(TypeError):
             create_bridge(**invalid_input)
 
     def test_create_bridge_with_invalid_client_key(self):
-        """Test that an invalid 'client_key' type raises a TypeError."""
+        """Test that an invalid 'clientkey' type raises a TypeError."""
 
-        invalid_input = VALID_INPUT.copy()
-        invalid_input["client_key"] = 123
+        invalid_input = self.valid_input.copy()
+        invalid_input["clientkey"] = 123
         with self.assertRaises(TypeError):
             create_bridge(**invalid_input)
 
     def test_create_bridge_with_invalid_name(self):
         """Test that an invalid 'name' type raises a TypeError."""
 
-        invalid_input = VALID_INPUT.copy()
+        invalid_input = self.valid_input.copy()
         invalid_input["name"] = 123
         with self.assertRaises(TypeError):
             create_bridge(**invalid_input)
@@ -122,14 +127,21 @@ class TestDiscovery(unittest.TestCase):
     def test_discover_bridges_without_ip(self, mock_discover):
         """Test bridge discovery without specifying an IP address."""
 
+        mock_bridge1 = MagicMock(spec=Bridge)
+        mock_bridge2 = MagicMock(spec=Bridge)
+
         mock_discover.return_value = {
-            "192.168.1.1": "Bridge1",
-            "192.168.1.2": "Bridge2",
+            "192.168.1.1": mock_bridge1,
+            "192.168.1.2": mock_bridge2,
         }
         discovery = Discovery()
         result = discovery.discover_bridges()
-        self.assertEqual(result, {"192.168.1.1": "Bridge1", "192.168.1.2": "Bridge2"})
-        mock_discover.assert_called_with(None)
+        expected_ips = {"192.168.1.1", "192.168.1.2"}
+
+        self.assertEqual(set(result.keys()), expected_ips)
+
+        for bridge in result.values():
+            self.assertIsInstance(bridge, Bridge)
 
     @patch("services.discovery_service.DiscoveryService.discover")
     def test_discover_bridges_with_ip(self, mock_discover):

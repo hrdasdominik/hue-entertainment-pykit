@@ -94,9 +94,9 @@ class TestBridgeRepository(unittest.TestCase):
         Tests the loading of authentication data from a JSON file using the _load_auth_data method.
         """
 
-        mock_read_json.return_value = {"username": "user", "client_key": "key"}
+        mock_read_json.return_value = {"username": "user", "clientkey": "key"}
         data = self.repo._load_auth_data()
-        self.assertEqual(data, {"username": "user", "client_key": "key"})
+        self.assertEqual(data, {"username": "user", "clientkey": "key"})
 
     @patch("utils.file_handler.FileHandler.write_json")
     def test_save_auth_data(self, mock_write_json):
@@ -104,7 +104,7 @@ class TestBridgeRepository(unittest.TestCase):
         Tests the _save_auth_data method to ensure it correctly writes authentication data to a JSON file.
         """
 
-        auth_data = {"username": "user", "client_key": "key"}
+        auth_data = {"username": "user", "clientkey": "key"}
         self.repo._save_auth_data(auth_data)
         mock_write_json.assert_called_with(FileHandler.AUTH_FILE_PATH, auth_data)
 

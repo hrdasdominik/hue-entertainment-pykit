@@ -13,14 +13,14 @@ import unittest
 from socket import error as SocketError
 from unittest.mock import MagicMock, patch
 
-from bridge.entertainment_configuration_repository import (
+from src.bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from models.entertainment_configuration import (
+from src.models.entertainment_configuration import (
     EntertainmentConfiguration,
 )
-from network.dtls import Dtls
-from services.streaming_service import StreamingService
+from src.network.dtls import Dtls
+from src.services.streaming_service import StreamingService
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
