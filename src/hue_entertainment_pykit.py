@@ -32,9 +32,9 @@ from utils.logger import setup_logging
 
 
 def setup_logs(
-    level: int = logging.DEBUG,
-    max_file_size: int = 1024 * 1024 * 5,
-    backup_count: int = 3,
+        level: int = logging.DEBUG,
+        max_file_size: int = 1024 * 1024 * 5,
+        backup_count: int = 3,
 ):
     """
     User-friendly interface to configure the library's logging system with default settings.
@@ -57,16 +57,16 @@ def setup_logs(
     setup_logging(level, max_file_size, backup_count)
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
 def create_bridge(
-    identification: str,
-    rid: str,
-    ip_address: str,
-    swversion: int,
-    username: str,
-    hue_app_id: str,
-    client_key: str,
-    name: str,
+        identification: str,
+        rid: str,
+        ip_address: str,
+        swversion: int,
+        username: str,
+        hue_app_id: str,
+        clientkey: str,
+        name: str,
 ) -> Bridge:
     """
     Creates a new Bridge object with the specified configuration.
@@ -79,7 +79,7 @@ def create_bridge(
         swversion (int): Software version of the Bridge.
         username (str): Username used for authentication with the Bridge.
         hue_app_id (str): Hue application ID.
-        client_key (str): Client key for secure communication with the Bridge.
+        clientkey (str): Client key for secure communication with the Bridge.
         name (str): Human-readable name of the Bridge.
 
     Returns:
@@ -91,7 +91,7 @@ def create_bridge(
     if not isinstance(rid, str):
         raise TypeError("Resource ID must be a string")
     if not isinstance(ip_address, str) or not re.match(
-        r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", ip_address
+            r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", ip_address
     ):
         raise ValueError("Invalid IP address format")
     if not isinstance(swversion, int):
@@ -100,7 +100,7 @@ def create_bridge(
         raise TypeError("Username must be a string")
     if not isinstance(hue_app_id, str):
         raise TypeError("Hue application ID must be a string")
-    if not isinstance(client_key, str):  # Add specific format check if needed
+    if not isinstance(clientkey, str):  # Add specific format check if needed
         raise TypeError("Client key must be a string")
     if not isinstance(name, str):
         raise TypeError("Name must be a string")
@@ -112,7 +112,7 @@ def create_bridge(
         swversion,
         username,
         hue_app_id,
-        client_key,
+        clientkey,
         name,
     )
 
@@ -219,10 +219,10 @@ class Streaming:
     """
 
     def __init__(
-        self,
-        bridge: Bridge,
-        entertainment_configuration: EntertainmentConfiguration,
-        ent_conf_repo: EntertainmentConfigurationRepository,
+            self,
+            bridge: Bridge,
+            entertainment_configuration: EntertainmentConfiguration,
+            ent_conf_repo: EntertainmentConfigurationRepository,
     ):
         """Initializes the Streaming class with bridge and entertainment configuration details."""
 
@@ -250,8 +250,8 @@ class Streaming:
         self._streaming_service.set_color_space(color_space)
 
     def set_input(
-        self,
-        input_data: Union[tuple[int, int, int, int], tuple[float, float, float, int]],
+            self,
+            input_data: Union[tuple[int, int, int, int], tuple[float, float, float, int]],
     ):
         """Sets the input data for the streaming service.
 

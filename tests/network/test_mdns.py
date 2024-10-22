@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 
 from zeroconf import Zeroconf
 
-from network.mdns import Mdns
+from src.network.mdns import Mdns
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
