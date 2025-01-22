@@ -48,13 +48,13 @@ class TestDtls(unittest.TestCase):
 
     def test_get_server_address(self):
         """
-        Tests the get_server_address method to ensure it returns the correct server address and port.
+        Tests the get_server_address http_method to ensure it returns the correct server address and port.
         """
         self.assertEqual(self.dtls_service.get_server_address(), ("192.168.1.2", 2100))
 
     def test_close_socket(self):
         """
-        Tests the close_socket method to verify it correctly closes the DTLS socket and cleans up resources.
+        Tests the close_socket http_method to verify it correctly closes the DTLS socket and cleans up resources.
         """
         mock_tls_socket = MagicMock(spec=TLSWrappedSocket)
         self.dtls_service._dtls_socket = mock_tls_socket

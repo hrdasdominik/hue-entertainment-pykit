@@ -19,10 +19,11 @@ import socket
 import time
 from typing import Tuple, List
 
-from mbedtls._tls import WantReadError, WantWriteError, HandshakeStep
-from mbedtls.tls import TLSWrappedSocket, DTLSConfiguration, ClientContext, DTLSVersion
+from mbedtls._tls import HandshakeStep, WantReadError, WantWriteError
+from mbedtls.tls import TLSWrappedSocket, DTLSConfiguration, ClientContext
 
-from src.hue_entertainment_pykit.models.bridge import Bridge
+from src.hue_entertainment_pykit.exception.bridge_exception import BridgeException
+from src.hue_entertainment_pykit.bridge.bridge import Bridge
 
 
 class Dtls:
@@ -101,12 +102,14 @@ class Dtls:
             TLSWrappedSocket | None: The DTLS socket, or None if unable to create
         """
 
+        if not self._dtls_socket:
+            self._create_dtls_socket()
         return self._dtls_socket
 
     def _create_dtls_socket(self):
         """
         Creates a DTLS socket with the necessary configuration and context.
-        This method is internally used to establish the DTLS connection.
+        This http_method is internally used to establish the DTLS connection.
         """
 
         if self._dtls_socket is None:
@@ -114,12 +117,11 @@ class Dtls:
             config = DTLSConfiguration(
                 pre_shared_key=(self._psk_identity, self._psk_key),
                 ciphers=self._ciphers,
-                lowest_supported_version=DTLSVersion.DTLSv1_2
             )
             dtls_client = ClientContext(config)
             udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            udp_socket.connect(self._server_address)
             udp_socket.settimeout(self._sock_timeout)
+            udp_socket.connect(self._server_address)
             buffer = dtls_client.wrap_buffers(server_hostname=self._server_address[0])
 
             self._dtls_socket = self.PatchedTLSWrappedSocket(udp_socket, buffer)
@@ -133,7 +135,7 @@ class Dtls:
 
         self._create_dtls_socket()
         logging.info("Starting DTLS handshake")
-        self._dtls_socket.do_handshake(self._server_address)
+        self._dtls_socket.do_handshake()
         logging.info("DTLS handshake established")
 
     def close_socket(self):
@@ -146,11 +148,50 @@ class Dtls:
             self._dtls_socket = None
 
     class PatchedTLSWrappedSocket(TLSWrappedSocket):
+        """
+        A patched version of `TLSWrappedSocket` that overrides the `do_handshake` http_method
+        to implement custom handshake logic with retry mechanisms for DTLS connections.
+
+        This class addresses specific issues related to handshake retries when using
+        Datagram Transport Layer Security (DTLS) over unreliable networks. It keeps track
+        of handshake attempts and implements a retry logic to ensure a successful handshake.
+        """
+
         def __init__(self, *args, **kwargs):
+            """
+            Initialize the patched TLS wrapped socket.
+
+            Args:
+                *args: Variable length argument list passed to the parent class.
+                **kwargs: Arbitrary keyword arguments passed to the parent class.
+
+            Attributes:
+                _handshake_retries (int): Counter for the number of handshake attempts.
+            """
+
             super().__init__(*args, **kwargs)
             self._handshake_retries = 0  # Track the number of handshake attempts
 
         def do_handshake(self, *args):
+            """
+            Perform the DTLS handshake with retry logic.
+
+            This http_method overrides the parent class's `do_handshake` http_method to include
+            custom retry logic for DTLS handshakes. It handles reading from and writing
+            to the underlying socket, and retransmits the ClientHello message if needed.
+
+            Args:
+                *args: Optional arguments which can be:
+                    - No arguments: Uses default flags and no specific address.
+                    - One argument (`address`): The address to send data to.
+                    - Two arguments (`flags`, `address`): Custom flags and address.
+
+            Raises:
+                OSError: If there is an error with the underlying socket connection.
+                TypeError: If an incorrect number of arguments is provided.
+                DTLSHandshakeException: If the maximum number of handshake retries is exceeded.
+            """
+
             # pylint: disable=too-many-branches
             if args and self.type is not socket.SOCK_DGRAM:
                 raise OSError(errno.ENOTCONN, os.strerror(errno.ENOTCONN))
@@ -178,7 +219,7 @@ class Dtls:
                                 errno.ENOTCONN, os.strerror(errno.ENOTCONN)
                             ) from exc
                     self._buffer.receive_from_network(data)
-                except WantWriteError:
+                except WantWriteError as exc:
                     in_transit = self._buffer.peek_outgoing(TLSWrappedSocket.CHUNK_SIZE)
                     if address is None:
                         amt = self._socket.send(in_transit, flags)
@@ -187,10 +228,10 @@ class Dtls:
                     self._buffer.consume_outgoing(amt)
 
                     self._handshake_retries += 1
-                    print(f"Retransmission attempt: {self._handshake_retries}")
+                    logging.debug("Retransmission attempt: %s", self._handshake_retries)
 
                     if self._handshake_retries < 3:
-                        print("Resending second ClientHello")
+                        logging.debug("Resending ClientHello")
                         time.sleep(0.3)
                         if address is None:
                             amt = self._socket.send(in_transit, flags)
@@ -199,6 +240,4 @@ class Dtls:
                         self._buffer.consume_outgoing(amt)
 
                     if self._handshake_retries > 3:
-                        raise Exception("Maximum handshake retries exceeded")
-
-
+                        raise BridgeException("Maximum handshake retries exceeded") from exc

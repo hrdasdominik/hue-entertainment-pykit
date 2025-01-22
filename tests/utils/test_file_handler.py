@@ -28,7 +28,7 @@ class TestFileHandler(unittest.TestCase):
     @patch("builtins.open", new_callable=mock_open, read_data='{"test": "data"}')
     def test_read_json(self, mock_file, mock_exists):
         """
-        Tests the read_json method to verify reading JSON data from files and handling file not found scenarios.
+        Tests the read_json http_method to verify reading JSON data from files and handling file not found scenarios.
         """
 
         # pylint: disable=unused-argument
@@ -45,7 +45,7 @@ class TestFileHandler(unittest.TestCase):
     @patch("builtins.open", new_callable=mock_open)
     def test_write_json(self, mock_file, mock_makedirs):
         """
-        Tests the write_json method to ensure correct writing of JSON data to files and
+        Tests the write_json http_method to ensure correct writing of JSON data to files and
         creation of necessary directories.
         """
 

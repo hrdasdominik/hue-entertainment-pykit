@@ -41,7 +41,7 @@ class Mdns(ServiceListener):
         """
         Retrieves the event object that signals the discovery of a new service.
 
-        This method returns an Event instance which is set when a new service (such as a Philips Hue Bridge)
+        This http_method returns an Event instance which is set when a new service (such as a Philips Hue Bridge)
         is discovered in the local network using mDNS. The event can be used to synchronize or trigger
         subsequent actions following the discovery of a service.
 
@@ -67,7 +67,7 @@ class Mdns(ServiceListener):
         """
         Responds to updates of an existing service.
 
-        This method is called when an advertised service, such as a Philips Hue Bridge, undergoes changes that
+        This http_method is called when an advertised service, such as a Philips Hue Bridge, undergoes changes that
         are broadcast over mDNS. It logs the update for tracking purposes.
 
         Parameters:

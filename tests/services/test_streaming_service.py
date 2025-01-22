@@ -1,11 +1,11 @@
 """
 Module: test_streaming_service.py
 
-This module contains unit tests for the StreamingService class, focusing on testing the functionality of
+This module contains unit tests for the BridgeStreamingService class, focusing on testing the functionality of
 streaming light patterns to Philips Hue entertainment areas.
 
 Classes:
-    TestStreamingService: A suite of unit tests for the StreamingService class.
+    TestStreamingService: A suite of unit tests for the BridgeStreamingService class.
 """
 
 import struct
@@ -26,18 +26,18 @@ from services.streaming_service import StreamingService
 # pylint: disable=protected-access, attribute-defined-outside-init
 class TestStreamingService(unittest.TestCase):
     """
-    Test suite for the StreamingService class, which handles streaming to Philips Hue entertainment areas.
+    Test suite for the BridgeStreamingService class, which handles streaming to Philips Hue entertainment areas.
 
     Attributes:
         mock_entertainment_config (MagicMock): A mock of the EntertainmentConfiguration class.
-        mock_entertainment_repo (MagicMock): A mock of the EntertainmentConfigurationRepository class.
+        mock_entertainment_repo (MagicMock): A mock of the EntertainmentConfigurationApiService class.
         mock_dtls_service (MagicMock): A mock of the Dtls class.
-        streaming_service (StreamingService): An instance of the StreamingService class for testing.
+        streaming_service (BridgeStreamingService): An instance of the BridgeStreamingService class for testing.
     """
 
     def setUp(self):
         """
-        Initializes the StreamingService with mock dependencies for testing.
+        Initializes the BridgeStreamingService with mock dependencies for testing.
         """
 
         self.mock_entertainment_config = MagicMock(spec=EntertainmentConfiguration)
@@ -54,7 +54,7 @@ class TestStreamingService(unittest.TestCase):
 
     def test_is_stream_active(self):
         """
-        Tests the is_stream_active method to verify the stream's active status.
+        Tests the is_stream_active http_method to verify the stream's active status.
         """
 
         self.assertFalse(self.streaming_service.is_stream_active())
@@ -63,7 +63,7 @@ class TestStreamingService(unittest.TestCase):
 
     def test_set_color_space_valid(self):
         """
-        Tests the set_color_space method with valid color spaces (rgb, xyb).
+        Tests the set_color_space http_method with valid color spaces (rgb, xyb).
         """
 
         self.streaming_service.set_color_space("rgb")
@@ -74,7 +74,7 @@ class TestStreamingService(unittest.TestCase):
 
     def test_set_color_space_invalid(self):
         """
-        Tests the set_color_space method with an invalid color space, expecting a ValueError.
+        Tests the set_color_space http_method with an invalid color space, expecting a ValueError.
         """
 
         with self.assertRaises(ValueError):
@@ -82,7 +82,7 @@ class TestStreamingService(unittest.TestCase):
 
     def test_start_stream(self):
         """
-        Tests the start_stream method to ensure it properly starts the streaming process.
+        Tests the start_stream http_method to ensure it properly starts the streaming process.
         """
 
         with patch.object(
@@ -90,7 +90,7 @@ class TestStreamingService(unittest.TestCase):
         ) as mock_conn_thread_start, patch.object(
             self.streaming_service._processing_thread, "start"
         ) as mock_proc_thread_start:
-            self.streaming_service.start_stream()
+            self.streaming_service.setup_for_streaming()
 
             mock_conn_thread_start.assert_called()
             mock_proc_thread_start.assert_called()
@@ -102,7 +102,7 @@ class TestStreamingService(unittest.TestCase):
     @patch("threading.Thread")
     def test_stop_stream_active(self, mock_thread):
         """
-        Tests the stop_stream method when the stream is active, ensuring proper stream termination.
+        Tests the stop_stream http_method when the stream is active, ensuring proper stream termination.
         """
 
         mock_thread.return_value.start.side_effect = lambda: None
@@ -111,14 +111,14 @@ class TestStreamingService(unittest.TestCase):
         self.streaming_service._connection_thread = mock_thread()
         self.streaming_service._processing_thread = mock_thread()
 
-        self.streaming_service.stop_stream()
+        self.streaming_service.setup_for_stop_streaming()
 
         self.assertFalse(self.streaming_service._is_connection_alive)
 
     @patch("threading.Thread")
     def test_stop_stream_inactive(self, mock_thread):
         """
-        Tests the stop_stream method when the stream is inactive, expecting a SocketError.
+        Tests the stop_stream http_method when the stream is inactive, expecting a SocketError.
         """
 
         mock_thread.return_value.start.side_effect = lambda: None
@@ -127,7 +127,7 @@ class TestStreamingService(unittest.TestCase):
 
         self.streaming_service._is_connection_alive = False
         with self.assertRaises(SocketError):
-            self.streaming_service.stop_stream()
+            self.streaming_service.setup_for_stop_streaming()
 
     def test_process_user_input_valid(self):
         """

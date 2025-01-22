@@ -1,11 +1,11 @@
 """
 Module: test_discovery_service.py
 
-This module contains unit tests for the DiscoveryService class, focusing on testing the functionality of
+This module contains unit tests for the BridgeDiscoveryService class, focusing on testing the functionality of
 discovering Philips Hue bridges using various methods like mDNS, cloud discovery, and manual IP input.
 
 Classes:
-    TestDiscoveryService: A suite of unit tests for the DiscoveryService class.
+    TestDiscoveryService: A suite of unit tests for the BridgeDiscoveryService class.
 """
 
 import json
@@ -30,17 +30,17 @@ from utils.status_code import StatusCode
 # pylint: disable=protected-access, attribute-defined-outside-init
 class TestDiscoveryService(unittest.TestCase):
     """
-    Test suite for the DiscoveryService class, which handles discovery of Philips Hue bridges.
+    Test suite for the BridgeDiscoveryService class, which handles discovery of Philips Hue bridges.
 
     Attributes:
         mdns_service (MagicMock): A mock of the Mdns class.
-        bridge_repository (MagicMock): A mock of the BridgeRepository class.
-        discovery_service (DiscoveryService): An instance of the DiscoveryService class for testing.
+        bridge_repository (MagicMock): A mock of the BridgeApiService class.
+        discovery_service (BridgeDiscoveryService): An instance of the BridgeDiscoveryService class for testing.
     """
 
     def setUp(self):
         """
-        Initializes the DiscoveryService with mock dependencies for testing.
+        Initializes the BridgeDiscoveryService with mock dependencies for testing.
         """
 
         self.mdns_service = MagicMock(spec=Mdns)
@@ -60,7 +60,7 @@ class TestDiscoveryService(unittest.TestCase):
 
     def test_does_support_streaming_data(self):
         """
-        Tests the _does_support_streaming_data method to verify streaming support based on bridge software version.
+        Tests the _does_support_streaming_data http_method to verify streaming support based on bridge software version.
         """
 
         bridge = MagicMock(spec=Bridge)
@@ -74,7 +74,7 @@ class TestDiscoveryService(unittest.TestCase):
     @patch.object(DiscoveryService, "_does_support_streaming_data")
     def test_filter_supported_bridges(self, mock_does_support_streaming):
         """
-        Tests the _filter_supported_bridges method to ensure it filters bridges based on streaming support.
+        Tests the _filter_supported_bridges http_method to ensure it filters bridges based on streaming support.
         """
 
         bridge1 = MagicMock(spec=Bridge)
@@ -97,7 +97,7 @@ class TestDiscoveryService(unittest.TestCase):
         self, mock_bridge_from_dict, mock_write_json
     ):
         """
-        Tests the _create_bridges_from_addresses method to verify creation of bridge instances from IP addresses.
+        Tests the _create_bridges_from_addresses http_method to verify creation of bridge instances from IP addresses.
         """
 
         test_addresses = ["192.168.1.3", "192.168.1.4"]
@@ -168,7 +168,7 @@ class TestDiscoveryService(unittest.TestCase):
     @patch("services.discovery_service.ServiceBrowser")
     def test_discover_via_mdns(self, mock_service_browser, mock_zeroconf):
         """
-        Tests the _discover_via_mdns method to verify bridge discovery using the mDNS protocol.
+        Tests the _discover_via_mdns http_method to verify bridge discovery using the mDNS protocol.
         """
 
         mock_zeroconf.return_value = MagicMock(spec=Zeroconf)
@@ -198,7 +198,7 @@ class TestDiscoveryService(unittest.TestCase):
     @patch.object(DiscoveryService, "_create_bridges_from_addresses")
     def test_discover_via_cloud_success(self, mock_create_bridges, mock_get):
         """
-        Tests the _discover_via_cloud method for a successful cloud-based discovery scenario.
+        Tests the _discover_via_cloud http_method for a successful cloud-based discovery scenario.
         """
 
         mock_response = MagicMock()
@@ -217,7 +217,7 @@ class TestDiscoveryService(unittest.TestCase):
     @patch("requests.get")
     def test_discover_via_cloud_failure(self, mock_get):
         """
-        Tests the _discover_via_cloud method for a failure scenario in cloud-based discovery.
+        Tests the _discover_via_cloud http_method for a failure scenario in cloud-based discovery.
         """
 
         mock_response = MagicMock()
@@ -232,7 +232,7 @@ class TestDiscoveryService(unittest.TestCase):
     @patch.object(DiscoveryService, "_create_bridges_from_addresses")
     def test_discover_manually(self, mock_create_bridges):
         """
-        Tests the _discover_manually method to ensure correct discovery using a manual IP address.
+        Tests the _discover_manually http_method to ensure correct discovery using a manual IP address.
         """
 
         test_ip = "192.168.1.3"
@@ -245,10 +245,10 @@ class TestDiscoveryService(unittest.TestCase):
         self.assertEqual(len(bridges), 1)
         self.assertEqual(bridges[0], mock_bridge)
 
-    @patch("services.discovery_service.DiscoveryService._filter_supported_bridges")
-    @patch("services.discovery_service.DiscoveryService._load_bridge_data")
-    @patch("services.discovery_service.DiscoveryService._discover_via_mdns")
-    @patch("services.discovery_service.DiscoveryService._discover_via_cloud")
+    @patch("services.discovery_service.BridgeDiscoveryService._filter_supported_bridges")
+    @patch("services.discovery_service.BridgeDiscoveryService._load_bridge_data")
+    @patch("services.discovery_service.BridgeDiscoveryService._discover_via_mdns")
+    @patch("services.discovery_service.BridgeDiscoveryService._discover_via_cloud")
     def test_discover(
         self,
         mock_discover_via_cloud,
@@ -257,7 +257,7 @@ class TestDiscoveryService(unittest.TestCase):
         mock_filter_supported_bridges,
     ):
         """
-        Tests the discover method to verify comprehensive bridge discovery using various methods.
+        Tests the discover http_method to verify comprehensive bridge discovery using various methods.
         """
 
         mock_cloud_bridge = MagicMock()
@@ -279,7 +279,7 @@ class TestDiscoveryService(unittest.TestCase):
         self.assertTrue("SavedBridge" in bridges)
 
         with patch(
-            "services.discovery_service.DiscoveryService._discover_manually"
+            "services.discovery_service.BridgeDiscoveryService._discover_manually"
         ) as mock_discover_manually:
             mock_manual_bridge = MagicMock()
             mock_manual_bridge.get_name.return_value = "ManualBridge"
@@ -293,7 +293,7 @@ class TestDiscoveryService(unittest.TestCase):
     @mock.patch("models.bridge.Bridge.from_dict")
     def test_load_bridge_data(self, mock_bridge_from_dict, mock_read_json):
         """
-        Tests the _load_bridge_data method to verify loading bridge data from a file.
+        Tests the _load_bridge_data http_method to verify loading bridge data from a file.
         """
 
         mock_bridge = mock.MagicMock(spec=Bridge)
@@ -347,7 +347,7 @@ class TestDiscoveryService(unittest.TestCase):
 
     def test_is_valid_ip(self):
         """
-        Tests the _is_valid_ip method to verify IP address validation.
+        Tests the _is_valid_ip http_method to verify IP address validation.
         """
 
         self.assertTrue(DiscoveryService._is_valid_ip("192.168.1.1"))

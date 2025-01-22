@@ -6,7 +6,7 @@ efficient color data handling.
 """
 from typing import Union
 
-from src.hue_entertainment_pykit.exceptions.not_valid_color import NotValidColor
+from src.hue_entertainment_pykit.exception.not_valid_color import NotValidColor
 from src.hue_entertainment_pykit.utils.color_validator import ColorValidator
 
 
@@ -16,20 +16,6 @@ class Converter:
     used in lighting and color processing. This class is essential for accurate color manipulations within
     the Philips Hue system.
     """
-
-    @classmethod
-    def _normalize_rgb(cls, rgb8: tuple[int, int, int]):
-        """
-        Normalize the RGB values from 0-255 range to 0-1 range.
-
-        Parameters:
-            rgb8 (tuple[int, int, int]): A tuple representing RGB values, where each value is in the range 0-255.
-
-        Returns:
-            list[float]: A list containing normalized RGB values in the range 0-1.
-        """
-
-        return [value / 255.0 for value in rgb8]
 
     @staticmethod
     def xyb_or_rgb8_to_rgb16(color: Union[tuple[int, int, int], tuple[float, float, float]]) -> tuple[int, int, int]:
@@ -53,6 +39,20 @@ class Converter:
         """
 
         return tuple(int(value * 65535) for value in Converter._normalize_rgb(rgb8))
+
+    @classmethod
+    def _normalize_rgb(cls, rgb8: tuple[int, int, int]):
+        """
+        Normalize the RGB values from 0-255 range to 0-1 range.
+
+        Parameters:
+            rgb8 (tuple[int, int, int]): A tuple representing RGB values, where each value is in the range 0-255.
+
+        Returns:
+            list[float]: A list containing normalized RGB values in the range 0-1.
+        """
+
+        return [value / 255.0 for value in rgb8]
 
     @classmethod
     def _xyb_to_rgb16(cls, xyb: tuple[float, float, float]):

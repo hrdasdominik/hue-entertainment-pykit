@@ -55,7 +55,7 @@ class TestMdns(unittest.TestCase):
 
     def test_add_service(self):
         """
-        Tests the add_service method to verify correct handling and addition of a new service.
+        Tests the add_service http_method to verify correct handling and addition of a new service.
         """
 
         zc = MagicMock(spec=Zeroconf)
@@ -68,7 +68,7 @@ class TestMdns(unittest.TestCase):
 
     def test_remove_service(self):
         """
-        Tests the remove_service method to ensure proper logging when a service is removed.
+        Tests the remove_service http_method to ensure proper logging when a service is removed.
         """
 
         zc = MagicMock(spec=Zeroconf)
@@ -79,7 +79,7 @@ class TestMdns(unittest.TestCase):
 
     def test_update_service(self):
         """
-        Tests the update_service method to verify correct logging behavior when a service is updated.
+        Tests the update_service http_method to verify correct logging behavior when a service is updated.
         """
 
         zc = MagicMock(spec=Zeroconf)
@@ -90,7 +90,7 @@ class TestMdns(unittest.TestCase):
 
     def test_get_addresses(self):
         """
-        Tests the get_addresses method to ensure it returns the list of discovered service addresses.
+        Tests the get_addresses http_method to ensure it returns the list of discovered service addresses.
         """
 
         self.mdns_service._addresses = ["192.168.1.1"]
@@ -98,7 +98,7 @@ class TestMdns(unittest.TestCase):
 
     def test_get_service_discovered(self):
         """
-        Tests the get_service_discovered method to verify it returns the service discovery event object.
+        Tests the get_service_discovered http_method to verify it returns the service discovery event object.
         """
 
         self.assertIsInstance(self.mdns_service.get_service_discovered(), Event)

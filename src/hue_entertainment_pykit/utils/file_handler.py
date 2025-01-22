@@ -15,7 +15,7 @@ Class:
 
 import json
 import os
-from typing import Any, Dict
+from typing import Any
 
 
 class FileHandler:
@@ -36,13 +36,14 @@ class FileHandler:
 
     AUTH_FILE_PATH = os.path.join(os.getcwd(), "data", "auth.json")
     BRIDGE_FILE_PATH = os.path.join(os.getcwd(), "data", "bridge.json")
+    ENTERTAINMENT_FILE_PATH = os.path.join(os.getcwd(), "data", "entertainment.json")
 
     @staticmethod
-    def read_json(file_path: str) -> Dict[str, Any] | None:
+    def read_json(file_path: str) -> dict[str, Any]:
         """
         Reads a JSON file and returns its contents as a dictionary.
 
-        If the file does not exist, an empty dictionary is returned. This method is primarily used to read
+        If the file does not exist, an empty dictionary is returned. This http_method is primarily used to read
         configuration and authentication data from a JSON file.
 
         Parameters:
@@ -58,11 +59,11 @@ class FileHandler:
         raise FileNotFoundError(file_path)
 
     @staticmethod
-    def write_json(file_path: str, data: Dict[str, Any]):
+    def write_json(file_path: str, data: dict[str, Any]):
         """
         Writes a dictionary to a JSON file.
 
-        If the directory in the file path does not exist, it is created. This method is primarily used to write
+        If the directory in the file path does not exist, it is created. This http_method is primarily used to write
         configuration and authentication data to a JSON file.
 
         Parameters:

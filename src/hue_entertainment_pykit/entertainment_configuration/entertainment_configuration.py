@@ -22,10 +22,9 @@ These classes and enums collectively enable the detailed and flexible representa
 configurations, facilitating the management and customization of lighting setups for entertainment purposes.
 """
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 from enum import Enum
-from typing import Optional, Any
-
+from typing import Optional, List, Any, Dict
 
 class ResourceTypes(Enum):
     """
@@ -33,10 +32,8 @@ class ResourceTypes(Enum):
 
     Each enum value represents a type of resource, such as entertainment areas and lights.
     """
-
     ENTERTAINMENT = "entertainment"
     LIGHT = "light"
-
 
 class ConfigurationTypes(Enum):
     """
@@ -44,13 +41,11 @@ class ConfigurationTypes(Enum):
 
     Each enum value represents a type of entertainment configuration, like screen, music, or 3D space setups.
     """
-
     SCREEN = "screen"
     MONITOR = "monitor"
     MUSIC = "music"
     THREEDSPACE = "3dspace"
     OTHER = "other"
-
 
 class StatusTypes(Enum):
     """
@@ -58,10 +53,8 @@ class StatusTypes(Enum):
 
     Each enum value represents a status like active or inactive.
     """
-
     ACTIVE = "active"
     INACTIVE = "inactive"
-
 
 class ProxyMode(Enum):
     """
@@ -69,19 +62,18 @@ class ProxyMode(Enum):
 
     Each enum value represents a type of proxy mode like auto or manual.
     """
-
     AUTO = "auto"
     MANUAL = "manual"
-
 
 @dataclass
 class Metadata:
     """
+    Represents metadata of an entertainment configuration.
 
+    Attributes:
+        name (str): The name of the entertainment configuration.
     """
-
     name: str
-
 
 @dataclass
 class Position:
@@ -93,11 +85,9 @@ class Position:
         y (float): The Y coordinate.
         z (float): The Z coordinate.
     """
-
     x: float
     y: float
     z: float
-
 
 @dataclass
 class ResourceIdentifier:
@@ -108,10 +98,8 @@ class ResourceIdentifier:
         rid (str): The resource identifier.
         rtype (ResourceTypes): The type of resource.
     """
-
     rid: str
     rtype: ResourceTypes
-
 
 @dataclass
 class SegmentReference:
@@ -122,10 +110,8 @@ class SegmentReference:
         service (ResourceIdentifier): The resource identifier.
         index (int): The index of the segment within the service.
     """
-
     service: ResourceIdentifier
     index: int
-
 
 @dataclass
 class EntertainmentChannel:
@@ -137,11 +123,9 @@ class EntertainmentChannel:
         position (Position): The 3D position of the channel.
         members (list[SegmentReference]): The segments that are part of this channel.
     """
-
     channel_id: int
     position: Position
-    members: list[SegmentReference]
-
+    members: List[SegmentReference]
 
 @dataclass
 class StreamProxyNode:
@@ -152,10 +136,8 @@ class StreamProxyNode:
         rtype (ResourceTypes): The type of resource.
         rid (str): The resource identifier.
     """
-
     rtype: ResourceTypes
     rid: str
-
 
 @dataclass
 class StreamProxy:
@@ -166,10 +148,8 @@ class StreamProxy:
         mode (ProxyMode): The proxy mode.
         node (StreamProxyNode): The node of the stream proxy.
     """
-
     mode: ProxyMode
     node: StreamProxyNode
-
 
 @dataclass
 class ServiceLocation:
@@ -182,12 +162,10 @@ class ServiceLocation:
         positions (list[Position]): Additional positions of the service.
         equalization_factor (float): The equalization factor for the service.
     """
-
     service: ResourceIdentifier
     position: Optional[Position]
-    positions: list[Position]
+    positions: List[Position]
     equalization_factor: float
-
 
 @dataclass
 class Locations:
@@ -199,7 +177,6 @@ class Locations:
     """
 
     service_locations: list[ServiceLocation]
-
 
 class EntertainmentConfiguration:
     """

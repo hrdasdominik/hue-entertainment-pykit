@@ -24,7 +24,7 @@ class TestConverter(unittest.TestCase):
 
     def test_normalize_rgb(self):
         """
-        Tests the _normalize_rgb method to ensure correct normalization of RGB values to [0, 1] range.
+        Tests the _normalize_rgb http_method to ensure correct normalization of RGB values to [0, 1] range.
         """
 
         result = Converter._normalize_rgb((255, 128, 0))
@@ -33,7 +33,7 @@ class TestConverter(unittest.TestCase):
 
     def test_rgb8_to_rgb16(self):
         """
-        Tests the rgb8_to_rgb16 method to verify conversion from 8-bit RGB to 16-bit RGB format.
+        Tests the rgb8_to_rgb16 http_method to verify conversion from 8-bit RGB to 16-bit RGB format.
         """
 
         result = Converter.rgb8_to_rgb16((255, 128, 0))
@@ -42,7 +42,7 @@ class TestConverter(unittest.TestCase):
 
     def test_rgb8_to_rgb16_various_inputs(self):
         """
-        Tests the rgb8_to_rgb16 method with various input values to ensure accurate conversions.
+        Tests the rgb8_to_rgb16 http_method with various input values to ensure accurate conversions.
         """
 
         test_cases = [
@@ -60,7 +60,7 @@ class TestConverter(unittest.TestCase):
 
     def test_float_to_16bit(self):
         """
-        Tests the xyb_to_rgb16 method to ensure correct conversion from float values to 16-bit values.
+        Tests the xyb_to_rgb16 http_method to ensure correct conversion from float values to 16-bit values.
         """
 
         result = Converter.xyb_to_rgb16((0.0, 0.5, 1.0))
@@ -69,7 +69,7 @@ class TestConverter(unittest.TestCase):
 
     def test_int_to_hex(self):
         """
-        Tests the int_to_hex method to verify conversion of integer values to hexadecimal strings.
+        Tests the int_to_hex http_method to verify conversion of integer values to hexadecimal strings.
         """
 
         result = Converter.int_to_hex(255)

@@ -108,17 +108,17 @@ class TestDiscovery(unittest.TestCase):
     """Tests for the Discovery class focusing on the discovery of bridges."""
 
     @patch("network.mdns.Mdns", Mdns)
-    @patch("bridge.bridge_repository.BridgeRepository", BridgeRepository)
-    @patch("services.discovery_service.DiscoveryService", DiscoveryService)
+    @patch("bridge.bridge_api_service.BridgeApiService", BridgeRepository)
+    @patch("services.discovery_service.BridgeDiscoveryService", DiscoveryService)
     def test_initialization(self):
         """Test the initialization of Discovery, ensuring correct instance creation of its components."""
 
         discovery = Discovery()
         self.assertIsInstance(discovery._mdns_service, Mdns)
-        self.assertIsInstance(discovery._bridge_repository, BridgeRepository)
-        self.assertIsInstance(discovery._discovery_service, DiscoveryService)
+        self.assertIsInstance(discovery._bridge_api_service, BridgeRepository)
+        self.assertIsInstance(discovery._bridge_discovery_service, DiscoveryService)
 
-    @patch("services.discovery_service.DiscoveryService.discover")
+    @patch("services.discovery_service.BridgeDiscoveryService.discover")
     def test_discover_bridges_without_ip(self, mock_discover):
         """Test bridge discovery without specifying an IP address."""
 
@@ -131,7 +131,7 @@ class TestDiscovery(unittest.TestCase):
         self.assertEqual(result, {"192.168.1.1": "Bridge1", "192.168.1.2": "Bridge2"})
         mock_discover.assert_called_with(None)
 
-    @patch("services.discovery_service.DiscoveryService.discover")
+    @patch("services.discovery_service.BridgeDiscoveryService.discover")
     def test_discover_bridges_with_ip(self, mock_discover):
         """Test bridge discovery when specifying an IP address."""
 

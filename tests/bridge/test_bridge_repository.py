@@ -1,13 +1,13 @@
 """
 Module: test_bridge_repository.py
 
-This module contains the unit tests for the BridgeRepository class in the bridge.bridge_repository module.
+This module contains the unit tests for the BridgeApiService class in the bridge.bridge_api_service module.
 It covers various scenarios including initialization, authentication data handling, base URL setting,
 HTTP request handling, and fetching various pieces of bridge data. Mocking is extensively used to isolate the tests from
 external dependencies like file systems and web requests.
 
 Classes:
-    TestBridgeRepository: A collection of unit tests for testing the BridgeRepository class.
+    TestBridgeRepository: A collection of unit tests for testing the BridgeApiService class.
 """
 
 import logging
@@ -28,26 +28,26 @@ from hue_entertainment_pykit.utils.status_code import StatusCode
 class TestBridgeRepository(unittest.TestCase):
     """
     The TestBridgeRepository class contains a suite of unit tests for testing the functionality of
-    the BridgeRepository class.
+    the BridgeApiService class.
 
-    This class tests various functionalities of the BridgeRepository, including initialization, loading and
+    This class tests various functionalities of the BridgeApiService, including initialization, loading and
     saving authentication data, setting the base URL, making HTTP requests, and fetching bridge-specific data like
     software version, application ID, and bridge name.
 
     Attributes:
         mock_request (MagicMock): A mock object for the requests.request function.
-        repo (BridgeRepository): An instance of the BridgeRepository class for testing.
+        repo (BridgeApiService): An instance of the BridgeApiService class for testing.
 
     Methods:
-        setUp: Sets up necessary mocks and instances before each test method.
-        tearDown: Cleans up after each test method.
-        test_initialization: Tests the initialization of the BridgeRepository.
-        test_load_auth_data: Tests the _load_auth_data method.
-        test_save_auth_data: Tests the _save_auth_data method.
-        test_set_base_url: Tests the _set_base_url method.
-        test_make_request_successful: Tests the _make_request method for a successful scenario.
-        test_make_request_no_base_url: Tests the _make_request method for a scenario where the base URL is not set.
-        test_make_request_bad_response: Tests the _make_request method for a scenario with a bad response.
+        setUp: Sets up necessary mocks and instances before each test http_method.
+        tearDown: Cleans up after each test http_method.
+        test_initialization: Tests the initialization of the BridgeApiService.
+        test_load_auth_data: Tests the _load_auth_data http_method.
+        test_save_auth_data: Tests the _save_auth_data http_method.
+        test_set_base_url: Tests the _set_base_url http_method.
+        test_make_request_successful: Tests the _make_request http_method for a successful scenario.
+        test_make_request_no_base_url: Tests the _make_request http_method for a scenario where the base URL is not set.
+        test_make_request_bad_response: Tests the _make_request http_method for a scenario with a bad response.
         ... (other test methods) ...
     """
 
@@ -82,7 +82,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_initialization(self):
         """
-        Tests the correct initialization of the BridgeRepository instance.
+        Tests the correct initialization of the BridgeApiService instance.
         """
 
         self.assertEqual(self.repo.get_headers()["Content-Type"], "application/json")
@@ -91,7 +91,7 @@ class TestBridgeRepository(unittest.TestCase):
     @patch("utils.file_handler.FileHandler.read_json")
     def test_load_auth_data(self, mock_read_json):
         """
-        Tests the loading of authentication data from a JSON file using the _load_auth_data method.
+        Tests the loading of authentication data from a JSON file using the _load_auth_data http_method.
         """
 
         mock_read_json.return_value = {"username": "user", "client_key": "key"}
@@ -101,7 +101,7 @@ class TestBridgeRepository(unittest.TestCase):
     @patch("utils.file_handler.FileHandler.write_json")
     def test_save_auth_data(self, mock_write_json):
         """
-        Tests the _save_auth_data method to ensure it correctly writes authentication data to a JSON file.
+        Tests the _save_auth_data http_method to ensure it correctly writes authentication data to a JSON file.
         """
 
         auth_data = {"username": "user", "client_key": "key"}
@@ -110,7 +110,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_set_base_url(self):
         """
-        Tests the _set_base_url method to verify that it correctly sets the base URL for the BridgeRepository instance.
+        Tests the _set_base_url http_method to verify that it correctly sets the base URL for the BridgeApiService instance.
         """
 
         self.repo.set_base_url("192.168.1.1")
@@ -118,7 +118,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_make_request_successful(self):
         """
-        Tests the _make_request method for a successful HTTP request scenario, verifying the response status code.
+        Tests the _make_request http_method for a successful HTTP request scenario, verifying the response status code.
         """
 
         self.repo.set_base_url("192.168.1.1")
@@ -127,7 +127,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_make_request_no_base_url(self):
         """
-        Tests the _make_request method to ensure it raises a ValueError when the base URL is not set.
+        Tests the _make_request http_method to ensure it raises a ValueError when the base URL is not set.
         """
 
         with self.assertRaises(ValueError):
@@ -136,7 +136,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_make_request_bad_response(self):
         """
-        Tests the _make_request method for a scenario where the HTTP request returns a bad response,
+        Tests the _make_request http_method for a scenario where the HTTP request returns a bad response,
         ensuring it raises the appropriate exception.
         """
 
@@ -147,7 +147,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_register_app_and_fetch_username_client_key_already_loaded(self):
         """
-        Tests the _register_app_and_fetch_username_client_key method to ensure it returns
+        Tests the _register_app_and_fetch_username_client_key http_method to ensure it returns
         existing authentication data without making a new registration request.
         """
 
@@ -161,7 +161,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_register_app_and_fetch_username_client_key_success(self):
         """
-        Tests the _register_app_and_fetch_username_client_key method to verify successful registration
+        Tests the _register_app_and_fetch_username_client_key http_method to verify successful registration
         and fetching of new authentication data.
         """
 
@@ -182,7 +182,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_register_app_and_fetch_username_client_key_error(self):
         """
-        Tests the _register_app_and_fetch_username_client_key method to ensure it raises
+        Tests the _register_app_and_fetch_username_client_key http_method to ensure it raises
         a BridgeException when the registration process fails.
         """
 
@@ -199,7 +199,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_fetch_swversion(self):
         """
-        Tests the _fetch_swversion method to verify it correctly fetches and returns the software version of the bridge.
+        Tests the _fetch_swversion http_method to verify it correctly fetches and returns the software version of the bridge.
         """
 
         self.mock_response.json.return_value = {"swversion": "1935144040"}
@@ -210,7 +210,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_fetch_hue_application_id(self):
         """
-        Tests the _fetch_hue_application_id method to ensure it correctly retrieves the Hue Application ID
+        Tests the _fetch_hue_application_id http_method to ensure it correctly retrieves the Hue Application ID
         from the bridge.
         """
 
@@ -222,7 +222,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_fetch_bridge_name(self):
         """
-        Tests the _fetch_bridge_name method to verify it correctly fetches and returns the name of the bridge.
+        Tests the _fetch_bridge_name http_method to verify it correctly fetches and returns the name of the bridge.
         """
 
         self.mock_response.json.return_value = {
@@ -235,7 +235,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_fetch_bridge_id_and_rid(self):
         """
-        Tests the _fetch_bridge_id_and_rid method to ensure it correctly fetches and returns the bridge ID and
+        Tests the _fetch_bridge_id_and_rid http_method to ensure it correctly fetches and returns the bridge ID and
         resource ID.
         """
 
@@ -250,7 +250,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_fetch_bridge_rid(self):
         """
-        Tests the _fetch_bridge_rid method to verify it correctly retrieves the resource identifier of the bridge.
+        Tests the _fetch_bridge_rid http_method to verify it correctly retrieves the resource identifier of the bridge.
         """
 
         self.repo.set_base_url("testbaseurl.com")
@@ -263,7 +263,7 @@ class TestBridgeRepository(unittest.TestCase):
 
     def test_fetch_bridge_data(self):
         """
-        Tests the fetch_bridge_data method to ensure it correctly aggregates various pieces of data about the bridge.
+        Tests the fetch_bridge_data http_method to ensure it correctly aggregates various pieces of data about the bridge.
         """
 
         self.mock_fetch_bridge_id_and_rid = patch.object(
@@ -289,7 +289,7 @@ class TestBridgeRepository(unittest.TestCase):
         self.mock_fetch_bridge_id_and_rid.return_value = ("bridge-id", "resource-id")
 
         address = "192.168.1.2"
-        data = self.repo.fetch_bridge_data(address)
+        data = self.repo.fetch_bridge(address)
 
         expected_data = {
             "id": "bridge-id",

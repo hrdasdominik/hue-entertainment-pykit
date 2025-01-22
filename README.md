@@ -101,7 +101,7 @@ streaming = Streaming(
 )
 
 # Start streaming messages to the bridge
-streaming.start_stream()
+streaming.setup_for_streaming()
 
 # Set the color space to xyb or rgb
 streaming.set_color_space("xyb")
@@ -117,7 +117,7 @@ streaming.set_input((0.63435, 0.0, 0.3, 1))  # Light command for the second ligh
 time.sleep(0.1)
 
 # Stop the streaming session
-streaming.stop_stream()
+streaming.setup_for_stop_streaming()
 ```
 
 Replace the placeholders in the `set_input` method with actual light IDs and the color and brightness values you intend to use. The `start_stream` method initiates the streaming session, `set_color_space` configures the color space, and `stop_stream` terminates the session.

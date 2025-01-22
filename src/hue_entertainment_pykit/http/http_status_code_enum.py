@@ -6,7 +6,7 @@ client errors, and server errors, providing an easy and readable way to use thes
 from enum import Enum
 
 
-class StatusCode(Enum):
+class HttpStatusCodeEnum(Enum):
     """Enum class for response status code"""
 
     OK = 200

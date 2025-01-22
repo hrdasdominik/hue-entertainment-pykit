@@ -1,267 +1,113 @@
-"""
-This module provides classes for discovering and managing bridge devices and their entertainment configurations
-in a network, as well as facilitating streaming operations. It includes the following key components:
-
-1. `Discovery`: Handles the discovery of bridge devices using Multicast DNS (MDNS) and a bridge repository.
-2. `EntertainmentService`: Manages entertainment configurations for a given bridge, including
-fetching and updating configurations.
-3. `Streaming`: Facilitates streaming operations for an entertainment configuration, including starting and
-stopping streams, setting color spaces, and managing input data.
-
-The module uses several dependencies, including services for MDNS, DTLS (Datagram Transport Layer Security), and
-general bridge device management. It is designed to be used in systems where bridge devices and
-their entertainment features need to be dynamically discovered, configured, and controlled.
-"""
 import logging
-import re
-from typing import Optional, Union
 
-from src.hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
-from src.hue_entertainment_pykit.bridge.entertainment_configuration_repository import (
-    EntertainmentConfigurationRepository,
-)
-from src.hue_entertainment_pykit.models.bridge import Bridge
-from src.hue_entertainment_pykit.models.entertainment_configuration import (
-    EntertainmentConfiguration,
-)
-from src.hue_entertainment_pykit.network.dtls import Dtls
-from src.hue_entertainment_pykit.network.mdns import Mdns
-from src.hue_entertainment_pykit.services.discovery_service import DiscoveryService
-from src.hue_entertainment_pykit.services.streaming_service import StreamingService
+from src.hue_entertainment_pykit.bridge.bridge import Bridge
+from src.hue_entertainment_pykit.bridge.bridge_discovery_service import BridgeDiscoveryService
+from src.hue_entertainment_pykit.bridge.bridge_service import BridgeService
+from src.hue_entertainment_pykit.entertainment_configuration.entertainment_configuration import \
+    EntertainmentConfiguration
+from src.hue_entertainment_pykit.light.light_abstract import LightAbstract
+from src.hue_entertainment_pykit.utils.color_space_enum import ColorSpaceEnum
 from src.hue_entertainment_pykit.utils.logger import setup_logging
 
 
-def setup_logs(
-    level: int = logging.DEBUG,
-    max_file_size: int = 1024 * 1024 * 5,
-    backup_count: int = 3,
-):
-    """
-    User-friendly interface to configure the library's logging system with default settings.
-
-    This wrapper function provides an easy way to set up logging with commonly used defaults. It initializes a rotating
-    log file mechanism with default parameters, but allows for customization of the logging level,
-    maximum log file size, and the number of backup files to keep.
-
-    The default log level is DEBUG. The log file, named 'philipsLightsLogs.log', is created in a 'logs' directory
-    within the current working directory. The default maximum log file size is set to 5 MB, with 3 backup files
-    retained.
-
-    Args:
-        level (int, optional): Logging level to set. Defaults to logging.DEBUG.
-        max_file_size (int, optional): Maximum size of the log file in bytes before rotation. Defaults to 5 MB
-        (5 * 1024 * 1024 bytes).
-        backup_count (int, optional): Number of backup log files to retain. Defaults to 3.
-    """
-
-    setup_logging(level, max_file_size, backup_count)
-
-
-# pylint: disable=too-many-arguments
-def create_bridge(
-    identification: str,
-    rid: str,
-    ip_address: str,
-    swversion: int,
-    username: str,
-    hue_app_id: str,
-    client_key: str,
-    name: str,
-) -> Bridge:
-    """
-    Creates a new Bridge object with the specified configuration.
-    This method initializes a Bridge instance with the provided parameters.
-
-    Args:
-        identification (str): Unique identifier of the Bridge.
-        rid (str): Resource identifier of the Bridge.
-        ip_address (str): IP address of the Bridge.
-        swversion (int): Software version of the Bridge.
-        username (str): Username used for authentication with the Bridge.
-        hue_app_id (str): Hue application ID.
-        client_key (str): Client key for secure communication with the Bridge.
-        name (str): Human-readable name of the Bridge.
-
-    Returns:
-        Bridge: An instance of the Bridge class configured with the given parameters.
-    """
-
-    if not isinstance(identification, str):
-        raise TypeError("Identification must be a string")
-    if not isinstance(rid, str):
-        raise TypeError("Resource ID must be a string")
-    if not isinstance(ip_address, str) or not re.match(
-        r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", ip_address
-    ):
-        raise ValueError("Invalid IP address format")
-    if not isinstance(swversion, int):
-        raise TypeError("Software version must be an integer")
-    if not isinstance(username, str):
-        raise TypeError("Username must be a string")
-    if not isinstance(hue_app_id, str):
-        raise TypeError("Hue application ID must be a string")
-    if not isinstance(client_key, str):  # Add specific format check if needed
-        raise TypeError("Client key must be a string")
-    if not isinstance(name, str):
-        raise TypeError("Name must be a string")
-
-    return Bridge(
-        identification,
-        rid,
-        ip_address,
-        swversion,
-        username,
-        hue_app_id,
-        client_key,
-        name,
-    )
-
-
-# pylint: disable=too-few-public-methods
-class Discovery:
-    """Handles the discovery of bridge devices in a network using MDNS and a bridge repository.
-
-    This class can discover bridge devices either broadly in the network or target a specific IP address.
-    It utilizes MDNS (Multicast DNS) for the discovery process.
-
-    Attributes:
-        _mdns_service (Mdns): An instance of MdnsService for discovering devices using MDNS.
-        _bridge_repository (BridgeRepository): Repository for storing and managing bridge devices.
-        _discovery_service (DiscoveryService): Service for discovering bridge devices.
-    """
-
-    def __init__(self):
-        """Initializes the Discovery class with necessary service instances."""
-
-        self._mdns_service = Mdns()
-        self._bridge_repository = BridgeRepository()
-        self._discovery_service = DiscoveryService(
-            self._mdns_service, self._bridge_repository
+class HueEntertainmentPyKit:
+    def __init__(self, app_name: str):
+        setup_logging(
+            level=logging.DEBUG,
+            max_file_size=1024 * 1024 * 5,
+            backup_count=3
         )
 
-    def discover_bridges(self, ip_address: Optional[str] = None) -> dict[str, Bridge]:
-        """Discovers bridge devices in the network.
+        self._bridge_discovery_service = BridgeDiscoveryService(app_name)
+        self._bridge_service_dict: dict[str, BridgeService] = {}
 
-        If an IP address is provided, the discovery is limited to that address.
+        self._init_setup()
 
-        Args:
-            ip_address (Optional[str]): The IP address to limit the discovery to. Default is None.
+    @classmethod
+    def modify_log_config(
+            cls,
+            level: int = logging.DEBUG,
+            max_file_size: int = 1024 * 1024 * 5,
+            backup_count: int = 3,
+            reconfigure: bool = True
+    ) -> None:
+        setup_logging(level, max_file_size, backup_count, reconfigure)
 
-        Returns:
-            dict[str, Bridge]: A dictionary of discovered bridges, keyed by their IP addresses.
-        """
-        return self._discovery_service.discover(ip_address)
+    def _init_setup(self) -> None:
+        bridge_dict: dict[str, Bridge] = self._bridge_discovery_service.fetch_bridge_dict()
 
+        for bridge in bridge_dict.values():
+            bridge_service = BridgeService(bridge)
+            self._bridge_service_dict[bridge_service.get_bridge().get_name()] = bridge_service
 
-class Entertainment:
-    """Manages entertainment configurations for a given bridge.
+    def get_bridge_name_list(self) -> list[str]:
+        return list(self._bridge_service_dict.keys())
 
-    This class provides functionality to fetch and manage entertainment configurations
-    associated with a bridge device.
+    def get_entertainment_configuration_name_list(self, bridge_name: str) -> list[str]:
+        bridge_service = self._bridge_service_dict[bridge_name]
 
-    Attributes:
-        _bridge (Bridge): The bridge device for which to manage entertainment configurations.
-        _ent_conf_repo (EntertainmentConfigurationRepository): Repository for the entertainment configurations.
-        _entertainment_configs (list[EntertainmentConfiguration] | None): Cached list of entertainment configurations.
-    """
+        if not bridge_service:
+            raise Exception(f"Bridge {bridge_name} not found")
 
-    def __init__(self, bridge: Bridge):
-        """Initializes the EntertainmentService with a specific bridge device."""
+        entertainment_configuration_service = bridge_service.get_entertainment_configuration_service()
+        entertainment_configuration_dict: dict[
+            str, EntertainmentConfiguration] = entertainment_configuration_service.get_all()
 
-        self._bridge = bridge
-        self._ent_conf_repo = EntertainmentConfigurationRepository(bridge)
-        self._entertainment_configs: dict[str, EntertainmentConfiguration] | None = None
+        return [entertainment_configuration.name for entertainment_configuration in
+                entertainment_configuration_dict.values()]
 
-    def get_entertainment_configs(self) -> dict[str, EntertainmentConfiguration]:
-        """Retrieves the entertainment configurations for the bridge.
+    def set_active_entertainment_configuration_on_bridge(self, bridge_name: str,
+                                                         entertainment_configuration_name: str) -> None:
+        bridge_service = self._bridge_service_dict.get(bridge_name)
 
-        Returns:
-            dict[str, EntertainmentConfiguration]: A dictionary of entertainment configurations.
-        """
+        if not bridge_service:
+            raise Exception(f"Bridge service {bridge_name} not found")
 
-        if self._entertainment_configs is None:
-            self._entertainment_configs = self._ent_conf_repo.fetch_configurations()
-        return self._entertainment_configs
+        entertainment_configuration_service = bridge_service.get_entertainment_configuration_service()
+        entertainment_configuration = entertainment_configuration_service.get_by_name(entertainment_configuration_name)
 
-    def get_config_by_id(self, config_id: str) -> EntertainmentConfiguration | None:
-        """Gets a specific entertainment configuration by its ID.
+        if not entertainment_configuration:
+            raise Exception(
+                f"Entertainment configuration {entertainment_configuration_name} not found on bridge {bridge_name}")
 
-        Args:
-            config_id (str): The ID of the configuration to retrieve.
+        entertainment_configuration_service.set_active(entertainment_configuration.name)
 
-        Returns:
-            EntertainmentConfiguration | None: The requested configuration if found, otherwise None.
-        """
+    def get_light_list_from_bridge(self, bridge_name: str) -> list[LightAbstract]:
+        bridge_service = self._bridge_service_dict[bridge_name]
 
-        return self._entertainment_configs[config_id]
+        if not bridge_service:
+            raise Exception(f"Bridge {bridge_name} not found")
 
-    def get_ent_conf_repo(self) -> EntertainmentConfigurationRepository:
-        """Returns the entertainment configuration repository.
+        return bridge_service.fetch_all_lights()
 
-        Returns:
-            EntertainmentConfigurationRepository: The repository for entertainment configurations.
-        """
+    def start_streaming_on_bridge(self, bridge_name: str) -> None:
+        bridge_service = self._bridge_service_dict.get(bridge_name)
 
-        return self._ent_conf_repo
+        bridge_service.start_streaming()
 
+    def start_streaming_on_all_bridges(self):
+        for bridge_service in self._bridge_service_dict.values():
+            bridge_service.start_streaming()
 
-class Streaming:
-    """Facilitates streaming operations for an entertainment configuration.
+    def stop_streaming_on_bridge(self, bridge_name: str) -> None:
+        bridge_service = self._bridge_service_dict.get(bridge_name)
+        bridge_service.stop_streaming()
 
-    This class is responsible for starting and stopping streaming, setting the color space, and managing input data.
+    def stop_streaming_on_all_bridges(self):
+        for bridge_service in self._bridge_service_dict.values():
+            if bridge_service.is_streaming_active():
+                bridge_service.stop_streaming()
 
-    Attributes:
-        _dtls_service (Dtls): Service for DTLS (Datagram Transport Layer Security) operations.
-        _streaming_service (StreamingService): Service for handling streaming operations.
-    """
+    def set_color_space(self, color_space: ColorSpaceEnum) -> None:
+        for bridge_service in self._bridge_service_dict.values():
+            bridge_service.set_color_space(color_space)
 
-    def __init__(
-        self,
-        bridge: Bridge,
-        entertainment_configuration: EntertainmentConfiguration,
-        ent_conf_repo: EntertainmentConfigurationRepository,
-    ):
-        """Initializes the Streaming class with bridge and entertainment configuration details."""
+    def set_color_and_brightness(self, bridge_name: str, light_list: list[LightAbstract]):
+        bridge_service = self._bridge_service_dict.get(bridge_name)
+        if not bridge_service:
+            raise Exception(f"Bridge {bridge_name} not found")
 
-        self._dtls_service = Dtls(bridge)
-        self._streaming_service = StreamingService(
-            entertainment_configuration, ent_conf_repo, self._dtls_service
-        )
+        if not bridge_service.is_streaming_active():
+            raise Exception(f"Bridge {bridge_name} not streaming")
 
-    def start_stream(self):
-        """Starts the streaming service."""
-
-        self._streaming_service.start_stream()
-
-    def stop_stream(self):
-        """Stops the streaming service."""
-
-        self._streaming_service.stop_stream()
-
-    def set_color_space(self, color_space: str):
-        """Sets the color space for the streaming service.
-
-        Args:
-            color_space (str): The color space to be used in streaming. (rgb or xyb)
-        """
-        self._streaming_service.set_color_space(color_space)
-
-    def set_input(
-        self,
-        input_data: Union[tuple[int, int, int, int], tuple[float, float, float, int]],
-    ):
-        """Sets the input data for the streaming service.
-
-        The input data can be a tuple of either three integers or three floats followed by an integer.
-        The first three values represent color: in RGB format (0-255 range) when integers,
-        or in xyb format (CIE color space, 0.0-1.0 range) for floats, where 'b' stands for brightness.
-        The last integer in both cases is the ID of the light in the chosen Entertainment Area.
-
-        Args:
-            input_data (Union[tuple[int, int, int, int], tuple[float, float, float, int]]):
-                The input data to be used in streaming. This can be either a tuple of three integers (RGB format)
-                or a tuple of three floats (xyb format in CIE color space) followed by an integer (the light ID).
-
-        """
-
-        self._streaming_service.set_input(input_data)
+        bridge_service.send_color_and_brightness(light_list)

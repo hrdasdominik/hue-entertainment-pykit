@@ -38,7 +38,7 @@ def example():
         entertainment_service.get_ent_conf_repo(),
     )
 
-    streaming.start_stream()
+    streaming.setup_for_streaming()
 
     streaming.set_color_space("xyb")
 
@@ -52,7 +52,7 @@ def example():
 
     time.sleep(0.1)
 
-    streaming.stop_stream()
+    streaming.setup_for_stop_streaming()
     logging.info("Example finished")
 
 
