@@ -226,8 +226,8 @@ class StreamingService:
 
         while self._is_connection_alive:
             try:
-                self._dtls_service.get_socket().sendto(
-                    self._last_message, self._dtls_service.get_server_address()
+                self._dtls_service.get_socket().send(
+                    self._last_message
                 )
             except SocketError as e:
                 logging.error("Connection lost: %s", e)
@@ -327,12 +327,8 @@ class StreamingService:
             self._channel_data = self._pack_color_data(color, value)
             message = self._build_message(self._channel_data)
             logging.debug(message)
-            self._dtls_service.get_socket().sendto(
-                message,
-                (
-                    self._dtls_service.get_server_address()[0],
-                    self._dtls_service.get_server_address()[1],
-                ),
+            self._dtls_service.get_socket().send(
+                message
             )
             self._last_message = message
         except SocketError as e:
