@@ -222,7 +222,10 @@ class Dtls:
                     self._buffer.receive_from_network(data)
                 except WantWriteError as exc:
                     in_transit = self._buffer.peek_outgoing(TLSWrappedSocket.CHUNK_SIZE)
-                    amt = self._socket.send(in_transit, flags)
+                    if address is None:
+                        amt = self._socket.send(in_transit, flags)
+                    else:
+                        amt = self._socket.sendto(in_transit, flags, address)
                     self._buffer.consume_outgoing(amt)
 
                     self._handshake_retries += 1
@@ -231,7 +234,10 @@ class Dtls:
                     if self._handshake_retries < 3:
                         logging.debug("Resending ClientHello")
                         time.sleep(0.3)
-                        amt = self._socket.send(in_transit, flags)
+                        if address is None:
+                            amt = self._socket.send(in_transit, flags)
+                        else:
+                            amt = self._socket.sendto(in_transit, flags, address)
                         self._buffer.consume_outgoing(amt)
 
                     if self._handshake_retries > 3:
