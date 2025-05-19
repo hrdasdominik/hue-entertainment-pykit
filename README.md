@@ -81,7 +81,7 @@ bridge = create_bridge(
     swversion=1962097030,
     username="8nuTIcK2nOf5oi88-5zPvV1YCt0wTHZIGG8MwXpu",
     hue_app_id="94530efc-933a-4f7c-97e5-ccf1a9fc79af",
-    client_key="B42753E1E1605A1AB90E1B6A0ECF9C51",
+    clientkey="B42753E1E1605A1AB90E1B6A0ECF9C51",
     name="1st Bridge"
 )
 
