@@ -1,107 +1,67 @@
 """
 Module: test_mdns.py
 
-This module contains unit tests for the Mdns class, focusing on testing its functionality in
-discovering services using the mDNS protocol.
-
-Classes:
-    TestMdns: A suite of unit tests for the Mdns class.
+Unit tests for the Mdns class. We mock Zeroconf's get_service_info and the returned
+ServiceInfo.parsed_addresses() to simulate various discovery scenarios.
 """
-
-import logging
-import os
-import shutil
 import unittest
-from threading import Event
-from unittest.mock import MagicMock
+from unittest.mock import Mock
+from ipaddress import IPv4Address
 
-from zeroconf import Zeroconf
-
-from network.mdns import Mdns
+from hue_entertainment_pykit.lowl.network.mdns import Mdns
 
 
-# pylint: disable=protected-access, attribute-defined-outside-init
+class _FakeServiceInfo:
+    def __init__(self, addrs):
+        self._addrs = addrs
+
+    def parsed_addresses(self):
+        return list(self._addrs)
+
+
 class TestMdns(unittest.TestCase):
-    """
-    Test suite for the Mdns class, which handles service discovery using the mDNS protocol.
-
-    Attributes:
-        mdns_service (Mdns): An instance of the Mdns class for testing.
-    """
-
     def setUp(self):
-        """
-        Initializes the Mdns service for testing.
-        """
+        self.discovered = []
 
-        self.mdns_service = Mdns()
+        def _cb(addresses):
+            self.discovered.append(list(addresses))
 
-    def tearDown(self):
-        """
-        Cleans up logging and any created directories after tests.
-        """
+        self.listener = Mdns(_cb)
+        self.zc = Mock()
 
-        logging.shutdown()
-        if os.path.exists("logs"):
-            shutil.rmtree("logs")
+    def test_add_service_filters_ipv6_and_calls_callback(self):
+        info = _FakeServiceInfo(["192.168.1.10", "fe80::1", "10.0.0.5"])
+        self.zc.get_service_info.return_value = info
 
-    def test_initialization(self):
-        """
-        Tests the initialization of the Mdns service, ensuring it starts with an empty list of addresses.
-        """
+        self.listener.add_service(self.zc, "_hue._tcp.local.", "HueBridge-ABC")
 
-        self.assertEqual(self.mdns_service._addresses, [])
-        self.assertIsInstance(self.mdns_service._service_discovered, Event)
+        self.assertEqual(len(self.discovered), 1)
+        self.assertEqual(
+            self.discovered[0],
+            [IPv4Address("192.168.1.10"), IPv4Address("10.0.0.5")],
+        )
 
-    def test_add_service(self):
-        """
-        Tests the add_service method to verify correct handling and addition of a new service.
-        """
+    def test_update_service_calls_callback_with_ipv4s(self):
+        info = _FakeServiceInfo(["172.16.0.2"])
+        self.zc.get_service_info.return_value = info
 
-        zc = MagicMock(spec=Zeroconf)
-        zc.get_service_info.return_value = MagicMock()
-        zc.get_service_info.return_value.parsed_addresses.return_value = ["192.168.1.1"]
+        self.listener.update_service(self.zc, "_hue._tcp.local.", "HueBridge-XYZ")
 
-        self.mdns_service.add_service(zc, "_hue._tcp.local.", "Hue Bridge")
-        self.assertIn("192.168.1.1", self.mdns_service._addresses)
-        self.assertTrue(self.mdns_service._service_discovered.is_set())
+        self.assertEqual(len(self.discovered), 1)
+        self.assertEqual(self.discovered[0], [IPv4Address("172.16.0.2")])
 
-    def test_remove_service(self):
-        """
-        Tests the remove_service method to ensure proper logging when a service is removed.
-        """
+    def test_no_info_no_callback(self):
+        self.zc.get_service_info.return_value = None
 
-        zc = MagicMock(spec=Zeroconf)
+        self.listener.add_service(self.zc, "_hue._tcp.local.", "HueBridge-GONE")
+        self.assertEqual(self.discovered, [])
 
-        with self.assertLogs(level="INFO") as log:
-            self.mdns_service.remove_service(zc, "_hue._tcp.local.", "Hue Bridge")
-            self.assertIn("INFO:root:Service Hue Bridge removed", log.output)
+    def test_only_ipv6_no_callback(self):
+        info = _FakeServiceInfo(["fe80::abcd", "::1"])
+        self.zc.get_service_info.return_value = info
 
-    def test_update_service(self):
-        """
-        Tests the update_service method to verify correct logging behavior when a service is updated.
-        """
-
-        zc = MagicMock(spec=Zeroconf)
-
-        with self.assertLogs(level="INFO") as log:
-            self.mdns_service.update_service(zc, "_hue._tcp.local.", "Hue Bridge")
-            self.assertIn("INFO:root:Service Hue Bridge updated", log.output)
-
-    def test_get_addresses(self):
-        """
-        Tests the get_addresses method to ensure it returns the list of discovered service addresses.
-        """
-
-        self.mdns_service._addresses = ["192.168.1.1"]
-        self.assertEqual(self.mdns_service.get_addresses(), ["192.168.1.1"])
-
-    def test_get_service_discovered(self):
-        """
-        Tests the get_service_discovered method to verify it returns the service discovery event object.
-        """
-
-        self.assertIsInstance(self.mdns_service.get_service_discovered(), Event)
+        self.listener.add_service(self.zc, "_hue._tcp.local.", "HueBridge-IPv6")
+        self.assertEqual(self.discovered, [])
 
 
 if __name__ == "__main__":

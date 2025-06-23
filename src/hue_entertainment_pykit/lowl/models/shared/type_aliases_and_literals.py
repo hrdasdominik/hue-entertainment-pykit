@@ -1,0 +1,53 @@
+from typing import TypeAlias, Literal
+
+
+RidPattern = r"^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$"
+EntertainmentType = Literal["entertainment_configuration"]
+ConfigurationType = Literal["screen", "monitor", "music", "3dspace", "other"]
+ProxyMode = Literal["auto"]
+RType: TypeAlias = Literal[
+    "device",
+    "bridge_home",
+    "room",
+    "zone",
+    "service_group",
+    "light",
+    "button",
+    "bell_button",
+    "relative_rotary",
+    "temperature",
+    "light_level",
+    "motion",
+    "camera_motion",
+    "entertainment",
+    "contact",
+    "tamper",
+    "convenience_area_motion",
+    "security_area_motion",
+    "speaker",
+    "grouped_light",
+    "grouped_motion",
+    "grouped_light_level",
+    "device_power",
+    "device_software_update",
+    "zigbee_connectivity",
+    "zgp_connectivity",
+    "bridge",
+    "motion_area_candidate",
+    "wifi_connectivity",
+    "zigbee_device_discovery",
+    "homekit",
+    "matter",
+    "matter_fabric",
+    "scene",
+    "entertainment_configuration",
+    "public_image",
+    "auth_v1",
+    "behavior_script",
+    "behavior_instance",
+    "geofence_client",
+    "geolocation",
+    "smart_scene",
+    "motion_area_configuration",
+    "clip",
+]

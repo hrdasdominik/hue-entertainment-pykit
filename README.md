@@ -1,6 +1,5 @@
 # Hue Entertainment PyKit
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hrdasdominik/hue-entertainment-pykit/python-app.yml?branch=main&label=main)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hrdasdominik/hue-entertainment-pykit/python-app.yml?branch=dev&label=dev)
 ![GitHub Tag](https://img.shields.io/github/v/tag/hrdasdominik/hue-entertainment-pykit?include_prereleases)
 ![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fhrdasdominik%2Fhue-entertainment-pykit%2Fmain%2Fpyproject.toml)
 ![PyPI - Version](https://img.shields.io/pypi/v/hue-entertainment-pykit?link=https%3A%2F%2Fpypi.org%2Fproject%2Fhue-entertainment-pykit%2F)
@@ -60,7 +59,7 @@ from hue_entertainment_pykit import Discovery
 
 discovery = Discovery()
 
-# returns dict[str, Bridge] where the key is name of the bridge and value is the Bridge model with all important info for connecting to Entertainment API
+# returns dict[str, Bridge] where the key is name of the clients and value is the Bridge model with all important info for connecting to Entertainment API
 bridges = discovery.discover_bridges()  
 ```
 ### Streaming
@@ -88,7 +87,7 @@ bridge = create_bridge(
 # Set up the Entertainment API service
 entertainment_service = Entertainment(bridge)
 
-# Fetch all Entertainment Configurations on the Hue bridge
+# Fetch all Entertainment Configurations on the Hue clients
 entertainment_configs = entertainment_service.get_entertainment_configs()
 
 # Add some Entertainment Area selection logic
@@ -100,7 +99,7 @@ streaming = Streaming(
     bridge, entertainment_config, entertainment_service.get_ent_conf_repo()
 )
 
-# Start streaming messages to the bridge
+# Start streaming messages to the clients
 streaming.start_stream()
 
 # Set the color space to xyb or rgb
@@ -108,8 +107,8 @@ streaming.set_color_space("xyb")
 
 # Set input commands for the lights
 # First three values in the tuple are placeholders for the color RGB8(int) or (in this case) XYB(float) and the last integer is light ID inside the Entertainment API
-streaming.set_input((0.0, 0.63435, 0.3, 0))  # Light command for the first light
-streaming.set_input((0.63435, 0.0, 0.3, 1))  # Light command for the second light
+streaming.send_message_to_bridge((0.0, 0.63435, 0.3, 0))  # Light command for the first light
+streaming.send_message_to_bridge((0.63435, 0.0, 0.3, 1))  # Light command for the second light
 # ... Add more inputs as needed for additional lights and logic
 
 # For the purpose of example sleep is used for all inputs to process before stop_stream is called
