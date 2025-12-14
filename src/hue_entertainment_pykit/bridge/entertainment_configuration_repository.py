@@ -20,12 +20,11 @@ import logging
 import requests
 from requests import Response
 
-from models.bridge import Bridge
-from models.payload import Payload
-from models.entertainment_configuration import EntertainmentConfiguration
-from exceptions.api_exception import ApiException
-
-from utils.status_code import StatusCode
+from ..models.bridge import Bridge
+from ..models.payload import Payload
+from ..models.entertainment_configuration import EntertainmentConfiguration
+from ..exceptions.api_exception import ApiException
+from ..utils.status_code import StatusCode
 
 
 class EntertainmentConfigurationRepository:

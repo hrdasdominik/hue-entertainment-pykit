@@ -16,19 +16,19 @@ import logging
 import re
 from typing import Optional, Union
 
-from bridge.bridge_repository import BridgeRepository
-from bridge.entertainment_configuration_repository import (
+from .bridge.bridge_repository import BridgeRepository
+from .bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from models.bridge import Bridge
-from models.entertainment_configuration import (
+from .models.bridge import Bridge
+from .models.entertainment_configuration import (
     EntertainmentConfiguration,
 )
-from network.dtls import Dtls
-from network.mdns import Mdns
-from services.discovery_service import DiscoveryService
-from services.streaming_service import StreamingService
-from utils.logger import setup_logging
+from .network.dtls import Dtls
+from .network.mdns import Mdns
+from .services.discovery_service import DiscoveryService
+from .services.streaming_service import StreamingService
+from .utils.logger import setup_logging
 
 
 def setup_logs(

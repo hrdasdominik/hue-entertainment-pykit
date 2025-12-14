@@ -22,9 +22,9 @@ from typing import Tuple, List
 from mbedtls._tls import HandshakeStep, WantReadError, WantWriteError
 from mbedtls.tls import TLSWrappedSocket, DTLSConfiguration, ClientContext
 
-from models.bridge import Bridge
+from ..models.bridge import Bridge
 
-from exceptions.dtls_handshake_exception import DTLSHandshakeException
+from ..exceptions.dtls_handshake_exception import DTLSHandshakeException
 
 
 class Dtls:

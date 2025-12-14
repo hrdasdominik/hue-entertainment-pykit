@@ -1,10 +1,12 @@
 venv/
+.venv/
 __pycache__/
 logs/
 .idea/
 data/
 .run/
 dist
+response_examples/
 *.egg-info
 docs/wireshark
 qodana.yaml

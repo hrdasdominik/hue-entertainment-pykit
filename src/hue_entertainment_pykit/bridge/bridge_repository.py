@@ -11,9 +11,9 @@ from typing import Any
 import requests
 from requests import Response
 
-from exceptions.bridge_exception import BridgeException
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
+from ..exceptions.bridge_exception import BridgeException
+from ..utils.file_handler import FileHandler
+from ..utils.status_code import StatusCode
 
 
 # pylint: disable=too-few-public-methods

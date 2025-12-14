@@ -1,6 +1,5 @@
 # Hue Entertainment PyKit
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hrdasdominik/hue-entertainment-pykit/python-app.yml?branch=main&label=main)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hrdasdominik/hue-entertainment-pykit/python-app.yml?branch=dev&label=dev)
 ![GitHub Tag](https://img.shields.io/github/v/tag/hrdasdominik/hue-entertainment-pykit?include_prereleases)
 ![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fhrdasdominik%2Fhue-entertainment-pykit%2Fmain%2Fpyproject.toml)
 ![PyPI - Version](https://img.shields.io/pypi/v/hue-entertainment-pykit?link=https%3A%2F%2Fpypi.org%2Fproject%2Fhue-entertainment-pykit%2F)
@@ -26,6 +25,9 @@ To install Hue Entertainment PyKit, ensure you have Python installed on your sys
 ```sh
 pip install hue-entertainment-pykit
 ```
+
+__Note:__ Python 3.13 and later are currently unsupported due to ___python-mbedtls___ not yet providing compatible 
+wheels. This sucks cause last update was in second quarter of 2024 and it looks like there won't be any anymore.
 
 ## Usage
 

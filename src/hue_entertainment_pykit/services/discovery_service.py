@@ -13,12 +13,12 @@ from typing import Optional
 import requests
 from zeroconf import Zeroconf, ServiceBrowser
 
-from bridge.bridge_repository import BridgeRepository
-from exceptions.bridge_exception import BridgeException
-from models.bridge import Bridge
-from network.mdns import Mdns
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
+from ..bridge.bridge_repository import BridgeRepository
+from ..exceptions.bridge_exception import BridgeException
+from ..models.bridge import Bridge
+from ..network.mdns import Mdns
+from ..utils.file_handler import FileHandler
+from ..utils.status_code import StatusCode
 
 
 # pylint: disable=too-few-public-methods
@@ -63,7 +63,7 @@ class DiscoveryService:
         self._mdns_service = mdns_service
         self._bridge_repository = bridge_repository
 
-    def discover(self, ip_address: Optional[str] = None) -> dict[str, Bridge] | list:
+    def discover(self, ip_address: Optional[str] = None) -> dict[str, Bridge]:
         """
         Discover bridges using a combination of saved data, mDNS, cloud, and manual IP input methods.
 
@@ -72,7 +72,7 @@ class DiscoveryService:
             If provided, adds manual discovery to the list of methods.
 
         Returns:
-            list[Bridge]: A list of discovered Bridge instances.
+            dict[str, Bridge]: A dict of discovered Bridge instances with key as bridge name.
 
         Raises:
             BridgeException: If no suitable bridges are found.

@@ -12,15 +12,15 @@ import time
 from socket import error as SocketError
 from typing import Union
 
-from models.payload import Payload
-from models.entertainment_configuration import (
+from ..models.payload import Payload
+from ..models.entertainment_configuration import (
     EntertainmentConfiguration,
 )
-from bridge.entertainment_configuration_repository import (
+from ..bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from network.dtls import Dtls
-from utils.converter import Converter
+from ..network.dtls import Dtls
+from ..utils.converter import Converter
 
 
 # pylint: disable=too-many-instance-attributes
