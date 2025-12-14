@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 
 from zeroconf import Zeroconf
 
-from src.network.mdns import Mdns
+from hue_entertainment_pykit.network.mdns import Mdns
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
@@ -75,7 +75,10 @@ class TestMdns(unittest.TestCase):
 
         with self.assertLogs(level="INFO") as log:
             self.mdns_service.remove_service(zc, "_hue._tcp.local.", "Hue Bridge")
-            self.assertIn("INFO:root:Service Hue Bridge removed", log.output)
+            self.assertIn(
+                "INFO:hue_entertainment_pykit.network.mdns:Service Hue Bridge removed",
+                log.output,
+            )
 
     def test_update_service(self):
         """
@@ -86,7 +89,7 @@ class TestMdns(unittest.TestCase):
 
         with self.assertLogs(level="INFO") as log:
             self.mdns_service.update_service(zc, "_hue._tcp.local.", "Hue Bridge")
-            self.assertIn("INFO:root:Service Hue Bridge updated", log.output)
+            self.assertIn("INFO:hue_entertainment_pykit.network.mdns:Service Hue Bridge updated", log.output)
 
     def test_get_addresses(self):
         """

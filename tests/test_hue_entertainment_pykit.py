@@ -11,11 +11,13 @@ integrity by handling both valid inputs and edge cases for robust error handling
 import unittest
 from unittest.mock import patch, MagicMock
 
-from hue_entertainment_pykit import create_bridge, Discovery, Entertainment
-from bridge.bridge_repository import BridgeRepository
-from models.bridge import Bridge
-from network.mdns import Mdns
-from services.discovery_service import DiscoveryService
+from hue_entertainment_pykit import EntertainmentConfiguration
+from hue_entertainment_pykit.api import create_bridge, Discovery, Entertainment
+from hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
+from hue_entertainment_pykit.models.bridge import Bridge
+from hue_entertainment_pykit.models.entertainment_configuration import StatusTypes
+from hue_entertainment_pykit.network.mdns import Mdns
+from hue_entertainment_pykit.services.discovery_service import DiscoveryService
 
 
 # pylint: disable=protected-access
@@ -112,9 +114,9 @@ class TestCreateBridge(unittest.TestCase):
 class TestDiscovery(unittest.TestCase):
     """Tests for the Discovery class focusing on the discovery of bridges."""
 
-    @patch("network.mdns.Mdns", Mdns)
-    @patch("bridge.bridge_repository.BridgeRepository", BridgeRepository)
-    @patch("services.discovery_service.DiscoveryService", DiscoveryService)
+    @patch("hue_entertainment_pykit.network.mdns.Mdns", Mdns)
+    @patch("hue_entertainment_pykit.bridge.bridge_repository.BridgeRepository", BridgeRepository)
+    @patch("hue_entertainment_pykit.services.discovery_service.DiscoveryService", DiscoveryService)
     def test_initialization(self):
         """Test the initialization of Discovery, ensuring correct instance creation of its components."""
 
@@ -123,7 +125,7 @@ class TestDiscovery(unittest.TestCase):
         self.assertIsInstance(discovery._bridge_repository, BridgeRepository)
         self.assertIsInstance(discovery._discovery_service, DiscoveryService)
 
-    @patch("services.discovery_service.DiscoveryService.discover")
+    @patch("hue_entertainment_pykit.services.discovery_service.DiscoveryService.discover")
     def test_discover_bridges_without_ip(self, mock_discover):
         """Test bridge discovery without specifying an IP address."""
 
@@ -143,7 +145,7 @@ class TestDiscovery(unittest.TestCase):
         for bridge in result.values():
             self.assertIsInstance(bridge, Bridge)
 
-    @patch("services.discovery_service.DiscoveryService.discover")
+    @patch("hue_entertainment_pykit.services.discovery_service.DiscoveryService.discover")
     def test_discover_bridges_with_ip(self, mock_discover):
         """Test bridge discovery when specifying an IP address."""
 

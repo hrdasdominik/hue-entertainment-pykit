@@ -12,13 +12,13 @@ Classes:
 import unittest
 from unittest.mock import MagicMock, patch
 
-from bridge.entertainment_configuration_repository import (
+from hue_entertainment_pykit.bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from exceptions.api_exception import ApiException
-from models.bridge import Bridge
-from models.entertainment_configuration import EntertainmentConfiguration
-from models.payload import Payload
+from hue_entertainment_pykit.exceptions.api_exception import ApiException
+from hue_entertainment_pykit.models.bridge import Bridge
+from hue_entertainment_pykit.models.entertainment_configuration import EntertainmentConfiguration
+from hue_entertainment_pykit.models.payload import Payload
 from tests.bridge.entertainment_configuration_mock import (
     ENTERTAINMENT_CONFIGURATION_MOCK,
 )

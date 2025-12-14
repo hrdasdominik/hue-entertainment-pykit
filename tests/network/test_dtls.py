@@ -13,8 +13,8 @@ from unittest.mock import MagicMock
 
 from mbedtls.tls import TLSWrappedSocket
 
-from src.models.bridge import Bridge
-from src.network.dtls import Dtls
+from hue_entertainment_pykit.models.bridge import Bridge
+from hue_entertainment_pykit.network.dtls import Dtls
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init

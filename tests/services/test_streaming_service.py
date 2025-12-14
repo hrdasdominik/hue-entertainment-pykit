@@ -13,14 +13,14 @@ import unittest
 from socket import error as SocketError
 from unittest.mock import MagicMock, patch
 
-from src.bridge.entertainment_configuration_repository import (
+from hue_entertainment_pykit.bridge.entertainment_configuration_repository import (
     EntertainmentConfigurationRepository,
 )
-from src.models.entertainment_configuration import (
+from hue_entertainment_pykit.models.entertainment_configuration import (
     EntertainmentConfiguration,
 )
-from src.network.dtls import Dtls
-from src.services.streaming_service import StreamingService
+from hue_entertainment_pykit.network.dtls import Dtls
+from hue_entertainment_pykit.services.streaming_service import StreamingService
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
@@ -146,7 +146,7 @@ class TestStreamingService(unittest.TestCase):
         with self.assertLogs(level="ERROR") as log:
             self.streaming_service.set_input(invalid_input)
             self.assertIn(
-                "ERROR:root:Invalid input: values must be a valid rgb8 (0 - 255) or xyb (0.0 - 1.0)",
+                "ERROR:hue_entertainment_pykit.services.streaming_service:Invalid input: values must be a valid rgb8 (0 - 255) or xyb (0.0 - 1.0)",
                 log.output,
             )
 

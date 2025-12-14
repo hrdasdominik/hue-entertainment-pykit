@@ -10,7 +10,7 @@ Classes:
 
 import unittest
 
-from src.utils.converter import Converter
+from hue_entertainment_pykit.utils.converter import Converter
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init

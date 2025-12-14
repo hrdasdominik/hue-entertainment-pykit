@@ -18,10 +18,10 @@ from unittest.mock import patch, MagicMock
 
 from requests import Response
 
-from bridge.bridge_repository import BridgeRepository
-from exceptions.bridge_exception import BridgeException
-from utils.file_handler import FileHandler
-from utils.status_code import StatusCode
+from hue_entertainment_pykit.bridge.bridge_repository import BridgeRepository
+from hue_entertainment_pykit.exceptions.bridge_exception import BridgeException
+from hue_entertainment_pykit.utils.file_handler import FileHandler
+from hue_entertainment_pykit.utils.status_code import StatusCode
 
 
 # pylint: disable=protected-access, attribute-defined-outside-init
@@ -88,7 +88,7 @@ class TestBridgeRepository(unittest.TestCase):
         self.assertEqual(self.repo.get_headers()["Content-Type"], "application/json")
         self.assertEqual(self.repo.get_base_url(), "https://")
 
-    @patch("utils.file_handler.FileHandler.read_json")
+    @patch("hue_entertainment_pykit.utils.file_handler.FileHandler.read_json")
     def test_load_auth_data(self, mock_read_json):
         """
         Tests the loading of authentication data from a JSON file using the _load_auth_data method.
@@ -98,7 +98,7 @@ class TestBridgeRepository(unittest.TestCase):
         data = self.repo._load_auth_data()
         self.assertEqual(data, {"username": "user", "clientkey": "key"})
 
-    @patch("utils.file_handler.FileHandler.write_json")
+    @patch("hue_entertainment_pykit.utils.file_handler.FileHandler.write_json")
     def test_save_auth_data(self, mock_write_json):
         """
         Tests the _save_auth_data method to ensure it correctly writes authentication data to a JSON file.

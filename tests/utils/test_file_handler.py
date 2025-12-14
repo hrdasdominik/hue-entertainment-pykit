@@ -13,7 +13,7 @@ import os
 import unittest
 from unittest.mock import patch, mock_open
 
-from src.utils.file_handler import FileHandler
+from hue_entertainment_pykit.utils.file_handler import FileHandler
 
 
 class TestFileHandler(unittest.TestCase):
