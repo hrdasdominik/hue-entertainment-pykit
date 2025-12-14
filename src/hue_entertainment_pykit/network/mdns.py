@@ -10,6 +10,8 @@ from threading import Event
 from zeroconf import ServiceListener, Zeroconf
 
 
+logger = logging.getLogger(__name__)
+
 class Mdns(ServiceListener):
     """
     Listens for mDNS (Multicast DNS) broadcasts to discover Philips Hue Bridge services in a local network.
@@ -61,7 +63,7 @@ class Mdns(ServiceListener):
             name (str): The name of the service.
         """
 
-        logging.info("Service %s removed", name)
+        logger.info("Service %s removed", name)
 
     def update_service(self, zc: Zeroconf, type_: str, name: str):
         """
@@ -76,7 +78,7 @@ class Mdns(ServiceListener):
             name (str): The name of the updated service.
         """
 
-        logging.info("Service %s updated", name)
+        logger.info("Service %s updated", name)
 
     def add_service(self, zc: Zeroconf, type_: str, name: str):
         """
@@ -92,11 +94,11 @@ class Mdns(ServiceListener):
         if info:
             self._addresses.extend(info.parsed_addresses())
             self._service_discovered.set()
-            logging.info(
+            logger.info(
                 "Service %s added, IP address: %s", name, ", ".join(self._addresses)
             )
         else:
-            logging.error("Failed to get service info for %s", name)
+            logger.error("Failed to get service info for %s", name)
 
     def get_addresses(self) -> list[str]:
         """

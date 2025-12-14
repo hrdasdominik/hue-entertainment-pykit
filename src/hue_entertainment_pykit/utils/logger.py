@@ -7,74 +7,54 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-COLORS = {
-    "WARNING": "\033[93m",
-    "INFO": "\033[94m",
-    "DEBUG": "\033[92m",
-    "CRITICAL": "\033[91m",
-    "ERROR": "\033[91m",
-    "ENDC": "\033[0m",
-}
+class LoggingUtil:
+    _COLORS = {
+        'TRACE': '\033[90m',
+        'DEBUG': '\033[96m',
+        'INFO': '\033[92m',
+        'WARNING': '\033[93m',
+        'ERROR': '\033[91m',
+        'CRITICAL': '\033[91m',
+        'ENDC': '\033[0m',
+    }
 
+    class _ColoredFormatter(logging.Formatter):
+        """Formatter for colored console logs."""
 
-class ColoredFormatter(logging.Formatter):
-    """
-    This custom formatter colors the log messages based on their severity level.
-    It extends the logging.Formatter class and overrides the format method to add color codes.
-    """
+        def format(self, record):
+            log_message = super().format(record)
+            color = LoggingUtil._COLORS.get(record.levelname, LoggingUtil._COLORS["ENDC"])
+            return f"{color}{log_message}{LoggingUtil._COLORS['ENDC']}"
 
-    def format(self, record):
-        log_message = super().format(record)
-        return f"{COLORS.get(record.levelname, COLORS['ENDC'])}{log_message}{COLORS['ENDC']}"
+    @staticmethod
+    def setup_logging(level: int, max_file_size: int, backup_count: int):
+        """
+        Sets up rotating file and colored console logging.
+        """
 
+        logger = logging.getLogger("hue_entertainment_pykit")
+        logger.setLevel(level)
 
-def setup_logging(
-    level: int,
-    max_file_size: int,
-    backup_count: int,
-):
-    """
-    Configures the logging system for the library with file and console handlers, using a rotating log file.
-
-    This function sets up a rotating log file in the 'logs' directory within the user's project's current working
-    directory.
-    The log file rotates when it reaches the specified maximum size, preserving a set number of backup files.
-
-    The console output is enhanced with colored log levels for improved readability. It verifies if the root logger has
-    existing handlers to avoid duplicate configurations.
-
-    The function is designed to be idempotent, allowing for repeated calls without introducing side effects like
-    multiple handlers.
-
-    Note:
-        Importing this library triggers the creation of a 'logs' directory in the current working directory.
-        Users desiring a different
-        logging setup should configure their logging prior to importing this library.
-
-    Args:
-        level (int): The logging level, such as logging.DEBUG, logging.INFO, etc.
-        max_file_size (int): Maximum size in bytes for the log file before it rotates. There are no default values;
-        users must specify this.
-        backup_count (int): Number of backup log files to retain. Users must provide this value as there are
-        no defaults.
-    """
-
-    if not logging.getLogger().hasHandlers():
         logs_dir = os.path.join(os.getcwd(), "logs")
-        if not os.path.exists(logs_dir):
-            os.mkdir(logs_dir)
-
+        os.makedirs(logs_dir, exist_ok=True)
         log_file_path = os.path.join(logs_dir, "philipsLightsLogs.log")
 
         file_handler = RotatingFileHandler(
             log_file_path, mode="a", maxBytes=max_file_size, backupCount=backup_count
         )
-        file_handler.setFormatter(
-            logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-        )
+        file_handler.setLevel(level)
+        file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s"))
+        file_handler._custom_philips_hue_handler = True  # marker
+        logger.addHandler(file_handler)
 
         console_handler = logging.StreamHandler()
-        console_formatter = ColoredFormatter("%(asctime)s [%(levelname)s] %(message)s")
-        console_handler.setFormatter(console_formatter)
+        console_handler.setLevel(level)
+        console_handler.setFormatter(
+            LoggingUtil._ColoredFormatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s")
+        )
+        logger.addHandler(console_handler)
 
-        logging.basicConfig(level=level, handlers=[file_handler, console_handler])
+        for handler in logger.handlers:
+            handler.setLevel(level)
+
+        return logger

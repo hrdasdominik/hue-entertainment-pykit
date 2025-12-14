@@ -16,6 +16,8 @@ from ..utils.file_handler import FileHandler
 from ..utils.status_code import StatusCode
 
 
+logger = logging.getLogger(__name__)
+
 # pylint: disable=too-few-public-methods
 class BridgeRepository:
     """
@@ -120,7 +122,7 @@ class BridgeRepository:
             The file path is obtained from the FileHandler.AUTH_FILE_PATH constant. If the file does not exist,
             it will be created.
         """
-        logging.debug("saving data: %s", data)
+        logger.debug("saving data: %s", data)
         FileHandler.write_json(FileHandler.AUTH_FILE_PATH, data)
 
     def _make_request(self, method: str, endpoint: str, **kwargs) -> Response:
@@ -144,7 +146,7 @@ class BridgeRepository:
         if self._base_url == "https://":
             raise ValueError("Base url is not set.")
         url = f"{self._base_url}{endpoint}"
-        logging.debug("headers: %s", self._headers)
+        logger.debug("headers: %s", self._headers)
         response = requests.request(
             method, url, headers=self._headers, verify=False, timeout=5, **kwargs
         )
@@ -153,8 +155,8 @@ class BridgeRepository:
                 f"Response status: {response.status_code}, {response.reason}"
             )
 
-        logging.debug("response-headers: %s", response.headers)
-        logging.debug("response-body: %s", response.json())
+        logger.debug("response-headers: %s", response.headers)
+        logger.debug("response-body: %s", response.json())
         return response
 
     def _register_app_and_fetch_username_client_key(self) -> tuple[str, str]:
@@ -169,14 +171,14 @@ class BridgeRepository:
             both values will be empty strings.
         """
 
-        logging.info("Registering app and fetching username/client key")
+        logger.info("Registering app and fetching username/client key")
 
         try:
             auth_data = self._load_auth_data()
             if auth_data:
                 return auth_data["username"], auth_data["clientkey"]
         except FileNotFoundError as e:
-            logging.warning("No existing username data at: %s", e)
+            logger.warning("No existing username data at: %s", e)
 
         response = self._make_request(
             "POST", "/api", json={"devicetype": "hep#1", "generateclientkey": True}
@@ -200,7 +202,7 @@ class BridgeRepository:
             int: The software version of the Bridge.
         """
 
-        logging.info("Fetching Bridge software version")
+        logger.info("Fetching Bridge software version")
         response = self._make_request("GET", "/api/config")
         return int(response.json()["swversion"])
 
@@ -212,7 +214,7 @@ class BridgeRepository:
             str: The Hue Application ID.
         """
 
-        logging.info("Fetching Hue Application ID")
+        logger.info("Fetching Hue Application ID")
         response = self._make_request("GET", "/auth/v1")
         return response.headers["hue-application-id"]
 
@@ -227,7 +229,7 @@ class BridgeRepository:
             str: The name of the Bridge.
         """
 
-        logging.info("Fetching Bridge Name")
+        logger.info("Fetching Bridge Name")
         response = self._make_request("GET", f"/clip/v2/resource/device/{rid}")
         return response.json()["data"][0]["metadata"]["name"]
 
@@ -239,7 +241,7 @@ class BridgeRepository:
             tuple[str, str]: A tuple containing the Bridge ID and RID.
         """
 
-        logging.info("Fetching Bridge ID and RID")
+        logger.info("Fetching Bridge ID and RID")
         response = self._make_request("GET", "/clip/v2/resource/bridge")
         data = response.json()["data"][0]
         return data["id"], data["owner"]["rid"]
@@ -252,7 +254,7 @@ class BridgeRepository:
             str: The RID of the Bridge.
         """
 
-        logging.info("Fetching Bridge RID")
+        logger.info("Fetching Bridge RID")
         response = self._make_request("GET", "/clip/v2/resource/bridge")
         return response.json()["data"][0]["owner"]["rid"]
 
@@ -273,7 +275,7 @@ class BridgeRepository:
             ValueError: If no IP address is provided or if the username is empty.
         """
 
-        logging.info("Fetching bridge data")
+        logger.info("Fetching bridge data")
         if not address:
             raise ValueError("No IP address provided for bridge data fetching.")
 
@@ -283,19 +285,19 @@ class BridgeRepository:
         if username == "":
             raise ValueError("Username is empty.")
 
-        logging.info("username: %s, clientkey: %s", username, client_key)
+        logger.info("username: %s, clientkey: %s", username, client_key)
         if not self._headers["hue-application-key"]:
             self._headers["hue-application-key"] = username
 
         identification, rid = self._fetch_bridge_id_and_rid()
-        logging.info("id: %s, rid: %s", identification, rid)
+        logger.info("id: %s, rid: %s", identification, rid)
 
         name = self._fetch_bridge_name(rid)
-        logging.info("name: %s", name)
+        logger.info("name: %s", name)
         swversion = self._fetch_swversion()
-        logging.info("swversion: %s", swversion)
+        logger.info("swversion: %s", swversion)
         hue_application_id = self._fetch_hue_application_id()
-        logging.info("hue-application-id: %s", hue_application_id)
+        logger.info("hue-application-id: %s", hue_application_id)
 
         data = {
             "id": identification,

@@ -21,6 +21,8 @@ from ..utils.file_handler import FileHandler
 from ..utils.status_code import StatusCode
 
 
+logger = logging.getLogger(__name__)
+
 # pylint: disable=too-few-public-methods
 class DiscoveryService:
     """
@@ -93,15 +95,17 @@ class DiscoveryService:
                 if bridges:
                     for bridge in bridges:
                         supported_bridges[bridge.get_name()] = bridge
+
+                    logger.info("Successfully discovered bridges")
                     return supported_bridges
             except (json.JSONDecodeError, ValueError) as e:
-                logging.error(e)
+                logger.error(e)
             except BridgeException as e:
-                logging.error(e)
+                logger.error(e)
             except FileNotFoundError as e:
-                logging.warning(e)
+                logger.warning(e)
 
-        logging.error("No suitable bridges found")
+        logger.error("No suitable bridges found")
         return {}
 
     def _discover_via_mdns(self) -> list[Bridge]:
@@ -112,7 +116,7 @@ class DiscoveryService:
             list[Bridge]: Discovered Bridge instances or an empty list if none found.
         """
 
-        logging.info("Discovering bridge/s via mDNS")
+        logger.debug("Discovering bridge/s via mDNS")
         with Zeroconf() as zconf:
             ServiceBrowser(zconf, self._MDNS_NAME, self._mdns_service)
             has_found_addresses = self._mdns_service.get_service_discovered().wait(timeout=10)
@@ -126,7 +130,7 @@ class DiscoveryService:
             if self._is_valid_ip(address):
                 ip_addresses.append(address)
 
-        logging.info("Discovered IPs: %s", ip_addresses)
+        logger.debug("Discovered bridge/s")
         return self._create_bridges_from_addresses(ip_addresses)
 
     def _discover_via_cloud(self) -> list[Bridge]:
@@ -140,13 +144,13 @@ class DiscoveryService:
             BridgeException: If the response from the cloud service is not successful.
         """
 
-        logging.info("Discovering bridge/s via Hue Cloud")
+        logger.info("Discovering bridge/s via Hue Cloud")
         response = requests.get(self._CLOUD_URL, timeout=5)
         if response.status_code != StatusCode.OK.value:
             raise BridgeException(f"Response status: {response.status_code}, {response.reason}")
 
         addresses = [config["internalipaddress"] for config in response.json()]
-        logging.debug("addresses: %s", addresses)
+        logger.debug("addresses: %s", addresses)
         return self._create_bridges_from_addresses(addresses)
 
     def _discover_manually(self, ip_address: str) -> list[Bridge]:
@@ -160,7 +164,7 @@ class DiscoveryService:
             list[Bridge]: A list containing the manually discovered Bridge instance, or an empty list if none found.
         """
 
-        logging.info("Discovering bridge via manual input of IP %s", ip_address)
+        logger.debug("Discovering bridge via manual input of IP %s", ip_address)
         return self._create_bridges_from_addresses([ip_address])
 
     def _create_bridges_from_addresses(self, addresses: list[str]) -> list[Bridge]:
@@ -227,14 +231,14 @@ class DiscoveryService:
             json.JSONDecodeError: If there is an error in decoding the JSON data.
         """
 
-        logging.info("Attempting to load bridge data from a file")
+        logger.info("Attempting to load bridge data from a file")
         try:
             data = FileHandler.read_json(FileHandler.BRIDGE_FILE_PATH)
             if isinstance(data, list):
-                logging.debug("data read: %s", data)
+                logger.debug("data read: %s", data)
                 return [Bridge.from_dict(bridge_data) for bridge_data in data]
             if isinstance(data, dict):
-                logging.debug("data read: %s", data)
+                logger.debug("data read: %s", data)
                 return [Bridge.from_dict(data)]
             raise ValueError("Invalid data format in bridge data file")
         except FileNotFoundError as e:

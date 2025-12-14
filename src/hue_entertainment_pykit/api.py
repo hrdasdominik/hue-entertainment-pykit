@@ -28,7 +28,7 @@ from .network.dtls import Dtls
 from .network.mdns import Mdns
 from .services.discovery_service import DiscoveryService
 from .services.streaming_service import StreamingService
-from .utils.logger import setup_logging
+from .utils.logger import LoggingUtil
 
 
 def setup_logs(
@@ -54,7 +54,7 @@ def setup_logs(
         backup_count (int, optional): Number of backup log files to retain. Defaults to 3.
     """
 
-    setup_logging(level, max_file_size, backup_count)
+    LoggingUtil.setup_logging(level, max_file_size, backup_count)
 
 
 # pylint: disable=too-many-positional-arguments
