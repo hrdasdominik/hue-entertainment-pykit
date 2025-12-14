@@ -21,22 +21,17 @@ classifiers = [
 ]
 requires-python = ">=3.10, <3.13"
 dependencies = [
-    "certifi==2025.11.12",
-    "charset-normalizer==3.4.4",
-    "click==8.3.1",
-    "colorama==0.4.6",
-    "idna==3.11",
-    "ifaddr==0.2.0",
-    "packaging==25.0",
-    "pathspec==0.12.1",
-    "platformdirs==4.5.1",
-    "python-mbedtls==2.10.1",
-    "requests==2.32.5",
-    "typing_extensions==4.15.0",
-    "urllib3==2.6.2",
-    "zeroconf==0.148.0"
+    "python-mbedtls>=2.10.1, <3",
+    "requests>=2.32.5, <3",
+    "typing_extensions>=4.8.0, <5; python_version < '3.11'",
+    "zeroconf>=0.148.0, <1"
 ]
 keywords = ["philips", "hue", "lights", "entertainment", "api"]
+
+[project.optional-dependencies]
+dev = [
+    "flake8>=7, <8"
+]
 
 [project.urls]
 Repository = "https://github.com/hrdasdominik/hue-entertainment-pykit"
@@ -46,4 +41,3 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
