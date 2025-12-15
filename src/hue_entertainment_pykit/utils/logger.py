@@ -41,6 +41,7 @@ class LoggingUtil:  # pylint: disable=too-few-public-methods
 
         logger = logging.getLogger("hue_entertainment_pykit")
         logger.setLevel(level)
+        logger.propagate = False
 
         logs_dir = os.path.join(os.getcwd(), "logs")
         os.makedirs(logs_dir, exist_ok=True)

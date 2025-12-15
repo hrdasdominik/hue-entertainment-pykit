@@ -36,6 +36,7 @@ class ResourceTypes(Enum):
 
     ENTERTAINMENT = "entertainment"
     LIGHT = "light"
+    DEVICE = "device"
 
 
 class ConfigurationTypes(Enum):

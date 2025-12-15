@@ -32,7 +32,7 @@ class Bridge:
         swversion (int): Software version of the Bridge. Defaults to 0.
         username (str): Username used for authentication with the Bridge. Defaults to an empty string.
         hue_app_id (str): Hue application ID. Defaults to an empty string.
-        client_key (str): Client key for secure communication with the Bridge. Defaults to an empty string.
+        clientkey (str): Client key for secure communication with the Bridge. Defaults to an empty string.
         name (str): Human-readable name of the Bridge. Defaults to an empty string.
     """
 
@@ -46,7 +46,7 @@ class Bridge:
         swversion: int = 0,
         username: str = "",
         hue_app_id: str = "",
-        client_key: str = "",
+        clientkey: str = "",
         name: str = "",
     ):
         # pylint: disable=too-many-arguments
@@ -56,7 +56,7 @@ class Bridge:
         self._swversion = swversion
         self._username = username
         self._hue_app_id = hue_app_id
-        self._client_key = client_key
+        self._client_key = clientkey
         self._name = name
 
     def get_identification(self) -> str:
@@ -174,7 +174,7 @@ class Bridge:
             rid=data.get("rid"),
             ip_address=data.get("internalipaddress"),
             username=data.get("username"),
-            client_key=data.get("clientkey"),
+            clientkey=data.get("clientkey"),
             name=data.get("name"),
             swversion=data.get("swversion"),
             hue_app_id=data.get("hue-application-id"),
