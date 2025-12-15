@@ -19,7 +19,8 @@ from hue_entertainment_pykit import Bridge
 def example():
     """Runs the example workflow for discovering bridges and managing streaming."""
 
-    setup_logs()
+    logging.basicConfig(level=logging.DEBUG)
+    setup_logs() # setup library internal logging. For more check README.md
     logging.info("Example started")
     discovery: Discovery = Discovery()
     bridges: dict[str, Bridge] = discovery.discover_bridges()

@@ -39,6 +39,9 @@ class LoggingUtil:  # pylint: disable=too-few-public-methods
         Sets up rotating file and colored console logging.
         """
 
+        for noisy in ("urllib3", "requests", "zeroconf"):
+            logging.getLogger(noisy).setLevel(logging.WARNING)
+
         logger = logging.getLogger("hue_entertainment_pykit")
         logger.setLevel(level)
         logger.propagate = False
