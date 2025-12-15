@@ -12,6 +12,7 @@ from zeroconf import ServiceListener, Zeroconf
 
 logger = logging.getLogger(__name__)
 
+
 class Mdns(ServiceListener):
     """
     Listens for mDNS (Multicast DNS) broadcasts to discover Philips Hue Bridge services in a local network.

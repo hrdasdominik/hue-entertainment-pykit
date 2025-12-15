@@ -21,7 +21,7 @@ This module abstracts the complexities involved in directly handling the Hue Ent
 streamlined interface for building applications that can create immersive lighting experiences.
 """
 
-from .api import Discovery, Streaming, create_bridge, setup_logs
+from .api import Discovery, Streaming, create_bridge, setup_logs, Entertainment
 from .models.bridge import Bridge
 from .models.entertainment_configuration import EntertainmentConfiguration
 
@@ -32,4 +32,5 @@ __all__ = [
     "setup_logs",
     "Bridge",
     "EntertainmentConfiguration",
+    "Entertainment",
 ]

@@ -23,6 +23,7 @@ from ..utils.status_code import StatusCode
 
 logger = logging.getLogger(__name__)
 
+
 # pylint: disable=too-few-public-methods
 class DiscoveryService:
     """
@@ -119,7 +120,9 @@ class DiscoveryService:
         logger.debug("Discovering bridge/s via mDNS")
         with Zeroconf() as zconf:
             ServiceBrowser(zconf, self._MDNS_NAME, self._mdns_service)
-            has_found_addresses = self._mdns_service.get_service_discovered().wait(timeout=10)
+            has_found_addresses = self._mdns_service.get_service_discovered().wait(
+                timeout=10
+            )
             if not has_found_addresses:
                 raise ValueError("No Hue bridges found via mDNS.")
 
@@ -147,7 +150,9 @@ class DiscoveryService:
         logger.info("Discovering bridge/s via Hue Cloud")
         response = requests.get(self._CLOUD_URL, timeout=5)
         if response.status_code != StatusCode.OK.value:
-            raise BridgeException(f"Response status: {response.status_code}, {response.reason}")
+            raise BridgeException(
+                f"Response status: {response.status_code}, {response.reason}"
+            )
 
         addresses = [config["internalipaddress"] for config in response.json()]
         logger.debug("addresses: %s", addresses)
@@ -198,7 +203,9 @@ class DiscoveryService:
             list[Bridge]: A filtered list of Bridge instances supporting streaming.
         """
 
-        return [bridge for bridge in bridges if self._does_support_streaming_data(bridge)]
+        return [
+            bridge for bridge in bridges if self._does_support_streaming_data(bridge)
+        ]
 
     def _does_support_streaming_data(self, bridge: Bridge) -> bool:
         """

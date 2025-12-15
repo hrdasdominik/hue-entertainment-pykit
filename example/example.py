@@ -9,30 +9,29 @@ Streaming classes from the hue_entertainment_pykit. It performs the following st
 5. Sends multiple input commands to the streaming service.
 6. Stops the streaming service after a brief pause.
 """
-
+import logging
 import time
 
+from hue_entertainment_pykit import EntertainmentConfiguration
 from hue_entertainment_pykit import Discovery, Streaming, Entertainment, setup_logs
-from models.bridge import Bridge
-from utils.logger import logging
-
+from hue_entertainment_pykit import Bridge
 
 def example():
     """Runs the example workflow for discovering bridges and managing streaming."""
 
     setup_logs()
     logging.info("Example started")
-    discovery = Discovery()
+    discovery: Discovery = Discovery()
     bridges: dict[str, Bridge] = discovery.discover_bridges()
 
-    bridge = list(bridges.values())[0]
+    bridge: Bridge = list(bridges.values())[0]
 
-    entertainment_service = Entertainment(bridge)
-    entertainment_configs = entertainment_service.get_entertainment_configs()
+    entertainment_service: Entertainment = Entertainment(bridge)
+    entertainment_configs: dict[str, EntertainmentConfiguration] = entertainment_service.get_entertainment_configs()
 
-    entertainment_config = list(entertainment_configs.values())[0]
+    entertainment_config: EntertainmentConfiguration = list(entertainment_configs.values())[0]
 
-    streaming = Streaming(
+    streaming: Streaming = Streaming(
         bridge,
         entertainment_config,
         entertainment_service.get_ent_conf_repo(),

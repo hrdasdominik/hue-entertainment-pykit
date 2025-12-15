@@ -12,6 +12,7 @@ communication.
 Classes:
 - Dtls: Handles DTLS connections with Philips Hue Bridges using pre-shared keys.
 """
+
 import errno
 import logging
 import os
@@ -28,6 +29,7 @@ from ..exceptions.dtls_handshake_exception import DTLSHandshakeException
 
 
 logger = logging.getLogger(__name__)
+
 
 class Dtls:
     """
@@ -216,7 +218,9 @@ class Dtls:
                     if address is None:
                         data = self._socket.recv(TLSWrappedSocket.CHUNK_SIZE, flags)
                     else:
-                        data, addr = self._socket.recvfrom(TLSWrappedSocket.CHUNK_SIZE, flags)
+                        data, addr = self._socket.recvfrom(
+                            TLSWrappedSocket.CHUNK_SIZE, flags
+                        )
                         if addr != address:
                             raise OSError(
                                 errno.ENOTCONN, os.strerror(errno.ENOTCONN)
@@ -243,4 +247,6 @@ class Dtls:
                         self._buffer.consume_outgoing(amt)
 
                     if self._handshake_retries > 3:
-                        raise DTLSHandshakeException("Maximum handshake retries exceeded") from exc
+                        raise DTLSHandshakeException(
+                            "Maximum handshake retries exceeded"
+                        ) from exc

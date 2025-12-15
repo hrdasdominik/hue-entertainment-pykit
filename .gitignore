@@ -9,4 +9,4 @@ dist
 response_examples/
 *.egg-info
 docs/wireshark
-qodana.yaml
+qodana.yaml.venv/

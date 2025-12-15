@@ -7,24 +7,31 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-class LoggingUtil:
-    _COLORS = {
-        'TRACE': '\033[90m',
-        'DEBUG': '\033[96m',
-        'INFO': '\033[92m',
-        'WARNING': '\033[93m',
-        'ERROR': '\033[91m',
-        'CRITICAL': '\033[91m',
-        'ENDC': '\033[0m',
+
+class LoggingUtil:  # pylint: disable=too-few-public-methods
+    """Utility namespace for setting up library logging.
+
+    This is intentionally a small, static helper (no instances), so pylint's
+    `too-few-public-methods` rule is not meaningful here.
+    """
+
+    COLORS = {
+        "TRACE": "\033[90m",
+        "DEBUG": "\033[96m",
+        "INFO": "\033[92m",
+        "WARNING": "\033[93m",
+        "ERROR": "\033[91m",
+        "CRITICAL": "\033[91m",
+        "ENDC": "\033[0m",
     }
 
     class _ColoredFormatter(logging.Formatter):
         """Formatter for colored console logs."""
 
-        def format(self, record):
+        def format(self, record: logging.LogRecord) -> str:
             log_message = super().format(record)
-            color = LoggingUtil._COLORS.get(record.levelname, LoggingUtil._COLORS["ENDC"])
-            return f"{color}{log_message}{LoggingUtil._COLORS['ENDC']}"
+            color = LoggingUtil.COLORS.get(record.levelname, LoggingUtil.COLORS["ENDC"])
+            return f"{color}{log_message}{LoggingUtil.COLORS['ENDC']}"
 
     @staticmethod
     def setup_logging(level: int, max_file_size: int, backup_count: int):
@@ -43,14 +50,18 @@ class LoggingUtil:
             log_file_path, mode="a", maxBytes=max_file_size, backupCount=backup_count
         )
         file_handler.setLevel(level)
-        file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s"))
-        file_handler._custom_philips_hue_handler = True  # marker
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s")
+        )
+        file_handler.custom_philips_hue_handler = True
         logger.addHandler(file_handler)
 
         console_handler = logging.StreamHandler()
         console_handler.setLevel(level)
         console_handler.setFormatter(
-            LoggingUtil._ColoredFormatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s")
+            LoggingUtil._ColoredFormatter(
+                "%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
+            )
         )
         logger.addHandler(console_handler)
 

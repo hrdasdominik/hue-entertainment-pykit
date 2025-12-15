@@ -18,6 +18,7 @@ from ..utils.status_code import StatusCode
 
 logger = logging.getLogger(__name__)
 
+
 # pylint: disable=too-few-public-methods
 class BridgeRepository:
     """

@@ -25,6 +25,7 @@ from ..utils.converter import Converter
 
 logger = logging.getLogger(__name__)
 
+
 # pylint: disable=too-many-instance-attributes
 class StreamingService:
     """
@@ -228,9 +229,7 @@ class StreamingService:
 
         while self._is_connection_alive:
             try:
-                self._dtls_service.get_socket().send(
-                    self._last_message
-                )
+                self._dtls_service.get_socket().send(self._last_message)
             except SocketError as e:
                 logger.error("Connection lost: %s", e)
                 if self._is_connection_alive:
@@ -329,9 +328,7 @@ class StreamingService:
             self._channel_data = self._pack_color_data(color, value)
             message = self._build_message(self._channel_data)
             logger.debug(message)
-            self._dtls_service.get_socket().send(
-                message
-            )
+            self._dtls_service.get_socket().send(message)
             self._last_message = message
         except SocketError as e:
             logger.error("Error sending message: %s", e)

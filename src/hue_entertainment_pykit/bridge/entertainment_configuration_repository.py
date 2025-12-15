@@ -29,6 +29,7 @@ from ..utils.status_code import StatusCode
 
 logger = logging.getLogger(__name__)
 
+
 class EntertainmentConfigurationRepository:
     """
     Manages Philips Hue Entertainment configurations through the Hue API.
@@ -55,7 +56,9 @@ class EntertainmentConfigurationRepository:
         """
 
         self._bridge: Bridge = bridge
-        self._base_url: str = f"https://{bridge.get_ip_address()}/clip/v2/resource/entertainment_configuration"
+        self._base_url: str = (
+            f"https://{bridge.get_ip_address()}/clip/v2/resource/entertainment_configuration"
+        )
 
         self._headers: dict[str, str] = {
             "Content-Type": "application/json",
