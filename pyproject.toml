@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=75.2.0", "wheel"]
+requires = ["setuptools>=80", "setuptools-scm>=8,<10", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "hue-entertainment-pykit"
-version = "0.9.5b1"
+dynamic = ["version"]
 authors = [
     {name = "Dominik Hrdas"}
 ]
@@ -42,3 +42,5 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
