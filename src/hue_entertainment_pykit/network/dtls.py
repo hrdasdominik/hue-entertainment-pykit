@@ -65,6 +65,7 @@ class Dtls:
         self._psk_key = bytes.fromhex(bridge.get_client_key())
         self._psk_identity: str = bridge.get_hue_application_id()
         self._ciphers: List[str] = [
+            "TLS-PSK-WITH-AES-128-GCM-SHA256",
             "TLS-PSK-WITH-AES-256-GCM-SHA384",
         ]
         self._dtls_socket: TLSWrappedSocket | None = None
